@@ -1,0 +1,36 @@
+name: Import 2007-2014 official Kagawa statistics
+on:
+  push:
+    paths:
+      - 'scripts/import_2007_2014.py'
+      - '.github/workflows/import-historical.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reader
+        run: python -m pip install requests beautifulsoup4
+      - name: Extract and validate 2007-2014 statistics
+        run: python scripts/import_2007_2014.py
+      - name: Verify JS syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          h=Path('index.html').read_text()
+          Path('/tmp/check.js').write_text(h.rsplit('<script>',1)[-1].split('</script>')[0])
+          PY
+          node --check /tmp/check.js
+      - name: Commit verified historical data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html kagawa_2007_2014_age.csv kagawa_2007_2014_natural_social.csv
+          git diff --cached --quiet || (git commit -m "Import verified 2007-2014 municipal statistics [skip ci]" && git push)
