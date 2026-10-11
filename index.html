@@ -239,6 +239,27 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
   .playback-toolbar #slider{min-width:110px}
   .display-toolbar{gap:11px}
 }
+
+/* Year series: the SVG and native year slider share the exact same column width. */
+.playback-toolbar{align-items:flex-start}
+.playback-toolbar>button,.playback-toolbar>#yearText,.playback-toolbar>#playSpeed{margin-top:2px}
+.playback-toolbar .year-trend-stack{
+  flex:1 1 175px;min-width:160px;display:flex;flex-direction:column;gap:2px;
+}
+.playback-toolbar .year-trend-stack #slider{
+  width:100%;min-width:0;flex:0 0 auto;align-self:stretch;
+  height:35px;padding:0;margin:0;box-shadow:none!important;accent-color:#171717;
+}
+.trend-panel{width:100%;min-width:0;border:0;border-top:1px solid #e0e3e0;padding:4px 0 0;margin:0;box-shadow:none;background:transparent}
+.trend-meta{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:16px;white-space:nowrap;overflow:hidden;font-size:10px;line-height:1.4}
+#trendSeriesTitle{color:#5b6262;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:750}
+#trendCurrentValue{flex-shrink:0;font-weight:800;color:#394b2f;font-variant-numeric:tabular-nums}
+#trendChartSvg{display:block;overflow:visible;max-width:100%;margin:0;padding:0;background:none;box-shadow:none}
+@media(max-width:740px){
+  .playback-toolbar .year-trend-stack{order:6;flex-basis:100%;min-width:190px}
+  .playback-toolbar{align-items:center}
+}
+
 </style>
 </head><body>
 <header><div><h1>香川県人口動態 <span class="slash">／</span> 3D地図</h1><small>2007–2025年・元サイトと同じ行政区域メッシュ / 人口・人口密度・割合 / 市町間の人口移動</small></div><div class="head-actions"><button id="helpBtn">? 使い方</button><button id="resetCamBtn">↺ 視点を戻す</button></div></header>
@@ -248,7 +269,13 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
     <div class="playback-toolbar" aria-label="年度・再生操作">
       <button id="playBtn">▶ 再生</button><button id="prevBtn" aria-label="前年へ">‹</button><button id="nextBtn" aria-label="翌年へ">›</button>
       <div id="yearText">2025</div>
-      <input id="slider" type="range" min="0" max="18" value="18" step="1" aria-label="年度">
+      <div class="year-trend-stack">
+        <input id="slider" type="range" min="0" max="18" value="18" step="1" aria-label="年度">
+        <div class="trend-panel" id="trendPanel" aria-label="現在の表示指標の年次推移">
+          <div class="trend-meta"><span id="trendSeriesTitle">香川県17市町計 ／ 人口の状況</span><span id="trendCurrentValue">2007〜2025年</span></div>
+          <svg id="trendChartSvg" width="100%" height="108" role="img" aria-label="2007年から2025年までの推移と現在年度を示す折れ線グラフ"></svg>
+        </div>
+      </div>
       <select id="playSpeed" aria-label="年度変化と補間アニメーションの再生速度" title="ゆっくり：1年の変化を18秒かけて再生し、4秒静止"><option value="slow">ゆっくり（約22秒／年）</option><option value="normal" selected>標準（約3.5秒／年）</option><option value="fast">速い（約1.4秒／年）</option></select>
     </div>
     <div class="display-toolbar" aria-label="地図の表示・視点操作">
@@ -499,7 +526,7 @@ function selectCity(name,center=false){
   const vals=currentModeHeights(currentYearPos).vals,net=getInterpNet(currentYearPos);
   showMunicipalityDetails(name,vals[name],net[name]);
   document.getElementById('hoverbox').classList.add('selected-city');
-  updateCityList(vals,net);refreshSelectedOutline();redrawRoads();
+  updateCityList(vals,net);refreshSelectedOutline();redrawRoads();renderTrendChart(true);
   if(center){const p=DATA.positions[name];controls.target.set(p[0],latestHeights[name]||20,p[1]);}
   const button=[...ui.cityList.querySelectorAll('.cityrow')].find(b=>b.dataset.city===name);
   if(button){button.scrollIntoView({block:'nearest',behavior:'smooth'});}
@@ -1100,6 +1127,166 @@ function updateEstatMigrationPanel(){
     '<div style="font-size:10px;margin-top:4px"><a target="_blank" rel="noopener" href="'+yearURL+'">香川県公式 第4表（'+year+'年）↗</a></div>';
 }
 
+
+// Time-series chart. Annual point values come from the same official arrays as the 3D map.
+// Never interpolate missing annual observations (notably age composition for 2025).
+let trendChartCacheKey = '';
+let trendChartSeries = [];
+let trendChartWidth = 0;
+const TREND_SIGNED_MODES = new Set(['naturalPop','naturalRate','naturalDensity','socialPop','socialRate','socialDensity']);
+function trendAnnualMunicipality(m,y,n){
+  const year=String(y);
+  if(m==='neutral')return 1;
+  if(m==='rate'||m==='population'||m==='density'){
+    const v=DATA.metrics[m]?.[year]?.[n];return Number.isFinite(v)?v:null;
+  }
+  if(m==='young'||m==='elderly'){
+    const a=EXTRA_DATA.age?.[year]?.[n];if(!a)return null;
+    const v=m==='young'?a.age_0_14_share:a.age_65_plus_share;
+    return Number.isFinite(v)?v:null;
+  }
+  const rec=EXTRA_DATA.natural?.[year]?.[n];
+  if(!rec)return null;
+  if(m==='births'||m==='deaths')return Number.isFinite(rec[m])?rec[m]:null;
+  const value=m.startsWith('natural')?rec.natural:rec.social;
+  if(!Number.isFinite(value))return null;
+  if(m.endsWith('Pop'))return value;
+  if(m.endsWith('Rate')){
+    const pop=DATA.metrics.population?.[year]?.[n];
+    return pop>0?value/pop*100:null;
+  }
+  if(m.endsWith('Density')){
+    const area=municipalityAreaKm2[n];return area>0?value/area:null;
+  }
+  return null;
+}
+function trendAnnualValue(m,y,n){
+  if(n)return trendAnnualMunicipality(m,y,n);
+  const year=String(y),cities=DATA.municipalities;
+  if(m==='neutral')return 1;
+  if(m==='rate'){
+    const now=cities.map(n=>DATA.metrics.population?.[year]?.[n]);
+    const base=cities.map(n=>DATA.metrics.population?.['2015']?.[n]);
+    if(now.some(v=>!Number.isFinite(v))||base.some(v=>!Number.isFinite(v)))return null;
+    const sum=a=>a.reduce((p,v)=>p+v,0);
+    return sum(base)>0?(sum(now)/sum(base)-1)*100:null;
+  }
+  if(m==='density'||m==='naturalDensity'||m==='socialDensity'){
+    const vals=cities.map(n=>m==='density'?trendAnnualMunicipality('population',y,n):
+      trendAnnualMunicipality(m==='naturalDensity'?'naturalPop':'socialPop',y,n));
+    if(vals.some(v=>!Number.isFinite(v)))return null;
+    const area=cities.reduce((a,n)=>a+(municipalityAreaKm2[n]||0),0);
+    return area>0?vals.reduce((a,v)=>a+v,0)/area:null;
+  }
+  if(m==='young'||m==='elderly'){
+    let subtotal=0,denom=0;
+    for(const n of cities){
+      const a=EXTRA_DATA.age?.[year]?.[n];if(!a)return null;
+      const sum=(a.age_0_14||0)+(a.age_15_64||0)+(a.age_65_plus||0);
+      if(!(sum>0))return null;
+      denom+=sum;subtotal+=m==='young'?a.age_0_14:a.age_65_plus;
+    }
+    return denom>0?subtotal/denom*100:null;
+  }
+  if(m==='naturalRate'||m==='socialRate'){
+    const key=m==='naturalRate'?'naturalPop':'socialPop';
+    const numer=cities.map(n=>trendAnnualMunicipality(key,y,n));
+    const pop=cities.map(n=>trendAnnualMunicipality('population',y,n));
+    if(numer.some(v=>!Number.isFinite(v))||pop.some(v=>!Number.isFinite(v)))return null;
+    const total=pop.reduce((a,v)=>a+v,0);
+    return total>0?numer.reduce((a,v)=>a+v,0)/total*100:null;
+  }
+  const vals=cities.map(n=>trendAnnualMunicipality(m,y,n));
+  return vals.some(v=>!Number.isFinite(v))?null:vals.reduce((a,v)=>a+v,0);
+}
+function trendFormatValue(v,m){
+  if(!Number.isFinite(v))return '未収録';
+  if(m==='neutral')return '一定';
+  const count=['population','births','deaths','naturalPop','socialPop'].includes(m);
+  const pct=['rate','young','elderly','naturalRate','socialRate'].includes(m);
+  const dp=pct?2:count?0:1;
+  return v.toLocaleString('ja-JP',{maximumFractionDigits:dp,minimumFractionDigits:0})+(pct?'%':count?'人':'人/km²');
+}
+function updateTrendCursor(){
+  const svg=document.getElementById('trendChartSvg');
+  if(!svg||!trendChartWidth||!trendChartSeries.length)return;
+  const pos=Math.max(0,Math.min(DATA.years.length-1,currentYearPos));
+  const x=8+(trendChartWidth-16)*pos/(DATA.years.length-1);
+  const line=document.getElementById('trendCurrentLine');
+  const dot=document.getElementById('trendCurrentDot');
+  if(line){line.setAttribute('x1',x);line.setAttribute('x2',x);}
+  const left=Math.floor(pos),right=Math.min(DATA.years.length-1,left+1),t=pos-left;
+  const a=trendChartSeries[left],b=trendChartSeries[right];
+  const val=(Number.isFinite(a)&&Number.isFinite(b))?a+(b-a)*t:
+    t<1e-6&&Number.isFinite(a)?a:Number.isFinite(b)&&1-t<1e-6?b:null;
+  if(dot){
+    dot.setAttribute('cx',x);
+    if(Number.isFinite(val)&&Number.isFinite(+svg.dataset.min)&&Number.isFinite(+svg.dataset.max)){
+      const v=Math.max(0,Math.min(1,(val-(+svg.dataset.min))/(+svg.dataset.max-(+svg.dataset.min))));
+      dot.setAttribute('cy',84-v*53);dot.setAttribute('visibility','visible');
+    }else dot.setAttribute('visibility','hidden');
+  }
+  const label=document.getElementById('trendCurrentValue');
+  if(label){
+    const yearLabel=t>.005&&t<.995?DATA.years[left]+'→'+DATA.years[right]:String(DATA.years[Math.round(pos)]);
+    label.textContent=yearLabel+' · '+trendFormatValue(val,mode);
+  }
+}
+function renderTrendChart(force=false){
+  const svg=document.getElementById('trendChartSvg');
+  if(!svg)return;
+  const box=svg.getBoundingClientRect();
+  const width=Math.max(160,Math.round(box.width||svg.parentElement?.clientWidth||240));
+  const key=mode+'|'+(selectedCity||'ALL')+'|'+width;
+  if(!force&&key===trendChartCacheKey){updateTrendCursor();return;}
+  trendChartCacheKey=key;
+  trendChartWidth=width;
+  const category=MODE_GROUPS[groupForMode(mode)];
+  const choice=category?.choices.find(a=>a[0]===mode);
+  const who=selectedCity||'香川県17市町計';
+  const name=(category?.label||'人口の状況')+'／'+(choice?.[1]||modeLabels[mode]||'');
+  document.getElementById('trendSeriesTitle').textContent=who+' · '+name;
+  trendChartSeries=DATA.years.map(y=>trendAnnualValue(mode,y,selectedCity));
+  const valid=trendChartSeries.filter(Number.isFinite);
+  const l=8,r=width-8,top=31,bottom=84,span=r-l;
+  svg.setAttribute('viewBox','0 0 '+width+' 108');
+  if(!valid.length){
+    svg.innerHTML='<text x="'+width/2+'" y="56" text-anchor="middle" font-size="11" fill="#666">データ未収録</text>';
+    document.getElementById('trendCurrentValue').textContent='未収録';
+    return;
+  }
+  let min=Math.min(...valid),max=Math.max(...valid);
+  if(TREND_SIGNED_MODES.has(mode)){min=Math.min(0,min);max=Math.max(0,max);}
+  const padding=(max-min||Math.max(1,Math.abs(max)))*.13;
+  min-=padding;max+=padding;
+  const x=i=>l+span*i/(DATA.years.length-1);
+  const y=v=>bottom-(v-min)/(max-min)*(bottom-top);
+  let svgLines='<line x1="'+l+'" y1="'+bottom+'" x2="'+r+'" y2="'+bottom+'" stroke="#cdd3cf" stroke-width="1"/>';
+  svgLines+='<line x1="'+l+'" y1="'+top+'" x2="'+r+'" y2="'+top+'" stroke="#e7eae7" stroke-width="1"/>';
+  if(min<0&&max>0){const z=y(0);svgLines+='<line x1="'+l+'" y1="'+z+'" x2="'+r+'" y2="'+z+'" stroke="#a5b2a2" stroke-width="1" stroke-dasharray="2 4"/>';}
+  for(const year of [2007,2010,2015,2020,2025]){
+    const i=DATA.years.indexOf(year),xx=x(i);
+    const align=year===2007?'start':year===2025?'end':'middle';
+    svgLines+='<text x="'+xx.toFixed(2)+'" y="103" text-anchor="'+align+'" font-size="10" font-family="Inter, sans-serif" fill="#747b77">'+year+'</text>';
+  }
+  let previous=false,paths=[],chunk=[];
+  trendChartSeries.forEach((v,i)=>{
+    if(!Number.isFinite(v)){
+      if(chunk.length>1)paths.push(chunk.join(' '));
+      chunk=[];previous=false;return;
+    }
+    chunk.push((previous?'L':'M')+x(i).toFixed(2)+','+y(v).toFixed(2));
+    previous=true;
+  });
+  if(chunk.length>1)paths.push(chunk.join(' '));
+  for(const p of paths){svgLines+='<path d="'+p+'" fill="none" stroke="#5a722b" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';}
+  svgLines+='<line id="trendCurrentLine" x1="'+l+'" x2="'+l+'" y1="24" y2="86" stroke="#2e3c21" stroke-width="1.4" stroke-dasharray="3 4"/>';
+  svgLines+='<circle id="trendCurrentDot" cx="'+l+'" cy="55" r="4" fill="#fff" stroke="#5a722b" stroke-width="2" visibility="hidden"/>';
+  svg.innerHTML=svgLines;
+  svg.dataset.min=String(min);svg.dataset.max=String(max);
+  updateTrendCursor();
+}
+
 let previousODLegendState=null;
 function refreshAll() {
   const odLegendState=currentYearPos<8;
@@ -1114,6 +1301,7 @@ function refreshAll() {
     ui.yearText.textContent=DATA.years[Math.round(currentYearPos)];
   }
   ui.slider.value=String(Math.round(targetYearPos));
+  renderTrendChart();
 }
 
 let last = performance.now();
@@ -1151,7 +1339,7 @@ function animate(now) {
   });
   controls.update();renderer.render(scene,camera);requestAnimationFrame(animate);
 }
-window.addEventListener('resize',()=>{ renderer.setSize(wrap.clientWidth, wrap.clientHeight, false); camera.aspect=wrap.clientWidth/wrap.clientHeight; camera.updateProjectionMatrix(); });
+window.addEventListener('resize',()=>{ renderer.setSize(wrap.clientWidth, wrap.clientHeight, false); camera.aspect=wrap.clientWidth/wrap.clientHeight; camera.updateProjectionMatrix(); renderTrendChart(true); });
 
 function parseOfficialHTML(html){
   const doc=new DOMParser().parseFromString(html,'text/html');
