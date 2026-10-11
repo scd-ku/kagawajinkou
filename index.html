@@ -1100,7 +1100,10 @@ function updateEstatMigrationPanel(){
     '<div style="font-size:10px;margin-top:4px"><a target="_blank" rel="noopener" href="'+yearURL+'">香川県公式 第4表（'+year+'年）↗</a></div>';
 }
 
+let previousODLegendState=null;
 function refreshAll() {
+  const odLegendState=currentYearPos<8;
+  if(previousODLegendState!==odLegendState){previousODLegendState=odLegendState;renderLegends();}
   updateEstatMigrationPanel();
   applyMunicipalVisuals();redrawRoads();
   const low=Math.floor(currentYearPos+1e-7);
