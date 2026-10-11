@@ -1351,11 +1351,18 @@ function adoptOfficial({mesh,pop,area}){
   DATA.sourceOfficial=true;
   const popMap=new Map(pop.map(r=>[r.name,r]));const aMap=new Map(area.map(r=>[r.name,r.area_km2]));
   DATA.areas=Object.fromEntries(area.map(r=>[r.name,r.area_km2]));
+  for(const n of DATA.municipalities){const km2=Number(aMap.get(n));if(km2>0)municipalityAreaKm2[n]=km2;}
   for(const y of DATA.years){if(y<2015)continue;const yr=String(y);
     for(const n of DATA.municipalities){const p=Number(popMap.get(n)?.[yr]);const a=Number(aMap.get(n));if(!(p>0&&a>0))throw new Error(n+yr+' 欠損');
       DATA.metrics.population[yr][n]=p;
       DATA.metrics.density[yr][n]=p/a;
       DATA.metrics.rate[yr][n]=100*(p-Number(popMap.get(n)['2015']))/Number(popMap.get(n)['2015']);
+    }
+  }
+  // Keep pre-2015 ratios comparable to the newly loaded official 2015 baseline.
+  for(const y of DATA.years){if(y>=2015)continue;const yr=String(y);
+    for(const n of DATA.municipalities){const base=DATA.metrics.population['2015'][n];
+      if(base>0)DATA.metrics.rate[yr][n]=100*(DATA.metrics.population[yr][n]-base)/base;
     }
   }
   for(const m of ['population','density','rate']){
@@ -1364,6 +1371,7 @@ function adoptOfficial({mesh,pop,area}){
   }
   buildGeo(mesh); refreshSelectedOutline();
   document.getElementById('sourceStatus').innerHTML='✓ <b>元サイトの公式行政区域メッシュ（2025）と人口系列（2015〜2025）、面積（2025）を読込済み</b>。島の輪郭も元サイトと同一データです。円柱・坂道は市役所・町役場の位置を使用しています。県内市町間転居は、香川県人口移動調査 第1表（2007〜2025年）のダウンロードデータを整形して利用しています。';
+  trendChartCacheKey='';
   refreshAll();
 }
 async function loadOfficial(){
