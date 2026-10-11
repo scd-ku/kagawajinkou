@@ -225,41 +225,53 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 }
 
 
-/* Unified timeline: indicators | draggable chart | camera views */
-.toolbar{display:block;padding:12px 14px 13px}
-.timeline-layout{display:grid;grid-template-columns:minmax(270px,330px) minmax(240px,1fr) max-content;align-items:center;gap:clamp(12px,1.3vw,24px);width:100%}
-.timeline-side{min-width:0}
-.timeline-indicators .data-selector-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.14fr);align-items:end;gap:8px;width:100%}
-.timeline-indicators #dataCategory,.timeline-indicators #heightMode{width:100%}
-.timeline-views .view-control-set{display:flex;flex-direction:column;gap:5px}
-.timeline-views .view-control-set>span{font-size:10px;font-weight:750;letter-spacing:.035em;color:#62696d;line-height:1.2}
-.timeline-views .view-control-buttons{display:flex;gap:8px;align-items:center}
-.timeline-views .view-control-buttons button{min-width:48px}
-.timeline-center{min-width:0}
-.playback-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 8px}
-.playback-buttons{display:flex;align-items:center;gap:7px;min-width:0}
-.playback-buttons #yearText{font-size:23px;font-weight:900;min-width:68px;text-align:center;line-height:1}
-.playback-buttons button{padding:7px 9px}
-.playback-toolbar #playSpeed{flex:0 1 auto;min-width:142px;max-width:205px;font-size:12px}
-.trend-panel{width:100%;min-width:0;border-top:1px solid #e0e3e0;padding:7px 0 0;margin:0;box-shadow:none;background:transparent}
-.trend-meta{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:19px;white-space:nowrap;overflow:hidden;font-size:10px;line-height:1.4}
+
+/* Single-row desktop composition: indicators/playback | time series | view/speed */
+.toolbar{display:block;padding:13px 17px 12px;border-bottom:1px solid var(--hair)}
+.timeline-shell{display:grid;grid-template-columns:minmax(255px,325px) minmax(260px,1fr) minmax(195px,230px);gap:clamp(13px,1.3vw,24px);align-items:stretch;width:100%;min-width:0}
+.timeline-left,.timeline-right{display:flex;flex-direction:column;justify-content:space-between;gap:19px;min-width:0;padding:8px 0 20px}
+.timeline-center{min-width:0;align-self:stretch}
+.timeline-left .data-selector-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.14fr);gap:9px;width:100%;align-items:end}
+.timeline-left .data-select-field{min-width:0}
+.timeline-left #dataCategory,.timeline-left #heightMode{width:100%;max-width:none}
+.timeline-left .data-select-field select{min-height:38px}
+.timeline-left .playback-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-width:0;margin:0}
+.timeline-left .playback-toolbar button{flex-shrink:0;padding:7px 9px;min-width:33px;min-height:37px}
+.timeline-left .playback-toolbar #playBtn{padding:7px 12px}
+.timeline-left #yearText{font-size:25px;font-weight:900;line-height:1;min-width:62px;letter-spacing:-.03em;text-align:center;margin-left:3px;font-variant-numeric:tabular-nums}
+.timeline-right .view-control-set,.timeline-right .speed-control-set{display:flex;flex-direction:column;gap:5px;min-width:0}
+.timeline-right .view-control-set>span,.timeline-right .speed-control-set>span{font-size:10px;font-weight:750;letter-spacing:.035em;color:#62696d;line-height:1.2}
+.timeline-right .view-control-buttons{display:flex;gap:8px;align-items:center;min-width:0}
+.timeline-right .view-control-buttons button{flex:1;min-width:0;padding:7px 6px;white-space:nowrap}
+.timeline-right #playSpeed{width:100%;max-width:none;min-width:0;min-height:38px;font-size:11px;padding:6px 24px 6px 9px}
+.trend-panel{width:100%;min-width:0;border:0;padding:0;margin:0;background:transparent;box-shadow:none}
+.trend-meta{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:22px;white-space:nowrap;overflow:hidden;font-size:10px;line-height:1.45;margin:0 0 2px}
 #trendSeriesTitle{color:#5b6262;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:750}
 #trendCurrentValue{flex-shrink:0;font-weight:800;color:#394b2f;font-variant-numeric:tabular-nums}
 #trendChartSvg{display:block;width:100%;height:166px;max-width:100%;margin:0;padding:0;background:none;box-shadow:none;cursor:ew-resize;touch-action:none;user-select:none}
-#trendChartSvg:focus-visible{outline:2px solid var(--olive,#657e2b);outline-offset:2px}
-@media(max-width:1550px){
-  .timeline-layout{grid-template-columns:minmax(0,1fr) max-content;grid-template-areas:"indicators views" "chart chart";align-items:end;gap:12px 16px}
-  .timeline-indicators{grid-area:indicators;max-width:350px}
-  .timeline-views{grid-area:views}
-  .timeline-center{grid-area:chart}
+#trendChartSvg:focus{outline:none}
+#trendChartSvg:focus-visible{outline:2px solid var(--olive);outline-offset:2px}
+@media(max-width:1300px){
+ .timeline-shell{grid-template-columns:minmax(230px,265px) minmax(225px,1fr) minmax(185px,195px);gap:12px}
+ .timeline-left .playback-toolbar{gap:5px}
+ .timeline-left .playback-toolbar button{padding:7px 6px}
+ .timeline-left .playback-toolbar #playBtn{padding:7px 8px}
+ .timeline-left #yearText{font-size:23px;min-width:57px;margin-left:0}
 }
-@media(max-width:720px){
-  .timeline-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"indicators" "chart" "views";gap:13px}
-  .timeline-indicators{max-width:none}
-  .timeline-views{justify-self:end}
-  .playback-toolbar{flex-wrap:wrap}
-  .playback-toolbar #playSpeed{margin-left:auto}
-  #trendCurrentValue{font-size:10px}
+@media(max-width:1020px){
+ .timeline-shell{grid-template-columns:minmax(0,1fr) minmax(190px,230px);grid-template-areas:"left right" "center center";row-gap:12px}
+ .timeline-left{grid-area:left;max-width:360px;padding:0;gap:12px}
+ .timeline-center{grid-area:center}
+ .timeline-right{grid-area:right;padding:0;gap:10px}
+ .timeline-right .speed-control-set{margin-top:auto}
+}
+@media(max-width:650px){
+ .timeline-shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"left" "center" "right";gap:13px}
+ .timeline-left{max-width:none}
+ .timeline-right{flex-direction:row;flex-wrap:wrap;align-items:end;justify-content:space-between}
+ .timeline-right .view-control-set{flex:1 1 180px}
+ .timeline-right .speed-control-set{flex:1 1 175px}
+ .trend-meta{font-size:9px}
 }
 
 </style>
@@ -268,29 +280,29 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 <div class="layout">
 <div class="maparea">
   <div class="toolbar" aria-label="地図操作">
-    <div class="timeline-layout">
-      <div class="timeline-side timeline-indicators">
+    <div class="timeline-shell">
+      <div class="timeline-left">
         <div class="data-selector-group" role="group" aria-label="表示する人口動態指標">
           <label class="data-select-field" for="dataCategory"><span>① 表示対象</span><select id="dataCategory" aria-label="表示対象を選択"><option value="population" selected>人口の状況</option><option value="natural">自然増減</option><option value="social">社会増減</option><option value="vital">出生・死亡</option><option value="age">年齢構成</option><option value="neutral">単色</option></select></label>
           <label class="data-select-field" for="heightMode"><span>② 指標</span><select id="heightMode" aria-label="表示指標を選択"><option value="rate" selected>2015年比（%）</option></select></label>
         </div>
+        <div class="playback-toolbar" aria-label="年度・再生操作">
+          <button id="playBtn">▶ 再生</button><button id="prevBtn" aria-label="前年へ">‹</button><button id="nextBtn" aria-label="翌年へ">›</button><div id="yearText">2025</div>
+        </div>
       </div>
       <div class="timeline-center">
-        <div class="playback-toolbar" aria-label="年度・再生操作">
-          <div class="playback-buttons">
-            <button id="playBtn">▶ 再生</button><button id="prevBtn" aria-label="前年へ">‹</button><button id="nextBtn" aria-label="翌年へ">›</button>
-            <div id="yearText">2025</div>
-          </div>
-          <select id="playSpeed" aria-label="年度変化と補間アニメーションの再生速度" title="ゆっくり：1年の変化を18秒かけて再生し、4秒静止"><option value="slow">ゆっくり（約22秒／年）</option><option value="normal" selected>標準（約3.5秒／年）</option><option value="fast">速い（約1.4秒／年）</option></select>
-        </div>
         <div class="trend-panel" id="trendPanel" aria-label="現在の表示指標の年次推移">
-          <div class="trend-meta"><span id="trendSeriesTitle">香川県17市町計 ／ 人口の状況</span><span id="trendCurrentValue">2007〜2025年</span></div>
+          <div class="trend-meta"><span id="trendSeriesTitle">香川県17市町計 ／ 人口の状況</span><span id="trendCurrentValue">2025</span></div>
           <svg id="trendChartSvg" width="100%" height="166" role="slider" tabindex="0" aria-label="年度を変更するグラフ。左右矢印キー、またはドラッグで移動" aria-valuemin="2007" aria-valuemax="2025" aria-valuenow="2025" aria-valuetext="2025年"></svg>
         </div>
       </div>
-      <div class="timeline-side timeline-views">
+      <div class="timeline-right">
         <div class="view-control-set" role="group" aria-label="地図の視点">
           <span>視点</span><div class="view-control-buttons"><button id="topBtn">真上</button><button id="frontBtn">正面</button><button id="sideBtn">横</button></div>
+        </div>
+        <div class="speed-control-set">
+          <label for="playSpeed">再生速度</label>
+          <select id="playSpeed" aria-label="年度変化と補間アニメーションの再生速度" title="ゆっくり：1年の変化を18秒かけて再生し、4秒静止"><option value="slow">ゆっくり（約22秒／年）</option><option value="normal" selected>標準（約3.5秒／年）</option><option value="fast">速い（約1.4秒／年）</option></select>
         </div>
       </div>
     </div>
@@ -1213,7 +1225,47 @@ function trendFormatValue(v,m){
   return v.toLocaleString('ja-JP',{maximumFractionDigits:dp,minimumFractionDigits:0})+(pct?'%':count?'人':'人/km²');
 }
 
-const TREND_PLOT={left:12,right:12,top:18,bottom:130,height:166,yearsY:157};
+// Axis margins are shared between the chart renderer, cursor, and pointer scrubbing.
+const TREND_PLOT={left:67,right:12,top:20,bottom:132,height:166,yearsY:157};
+function trendAxisUnit(m){
+  if(m==='neutral')return '一定';
+  if(['population','births','deaths','naturalPop','socialPop'].includes(m))return '人';
+  if(['rate','young','elderly','naturalRate','socialRate'].includes(m))return '%';
+  return '人/km²';
+}
+function trendNiceStep(raw){
+  const power=Math.pow(10,Math.floor(Math.log10(Math.max(raw,1e-12))));
+  const value=raw/power;
+  return (value<=1?1:value<=2?2:value<=5?5:10)*power;
+}
+function trendAxisScale(values,m){
+  if(!values.length)return {min:0,max:1,ticks:[0,1],step:1};
+  let min=Math.min(...values),max=Math.max(...values);
+  if(TREND_SIGNED_MODES.has(m)){min=Math.min(0,min);max=Math.max(0,max);}
+  const diff=max-min;
+  const padding=diff?diff*.09:Math.max(Math.abs(max)*.08,.2);
+  min-=padding;max+=padding;
+  let step=trendNiceStep((max-min)/4);
+  let lo=Math.floor(min/step)*step,hi=Math.ceil(max/step)*step;
+  // Preserve at most six legible Y ticks at any scale.
+  if((hi-lo)/step>5){
+    step=trendNiceStep((max-min)/3);
+    lo=Math.floor(min/step)*step;hi=Math.ceil(max/step)*step;
+  }
+  const ticks=[];
+  const n=Math.min(9,Math.round((hi-lo)/step));
+  for(let i=0;i<=n;i++)ticks.push(Number((lo+i*step).toPrecision(12)));
+  return {min:lo,max:hi,ticks,step};
+}
+function trendAxisNumber(value,step){
+  const v=Math.abs(value)<step*1e-7?0:value;
+  if(Math.abs(v)>=10000){
+    const digits=step>=10000?0:step>=1000?1:2;
+    return (v/10000).toLocaleString('ja-JP',{maximumFractionDigits:digits})+'万';
+  }
+  const digits=Math.min(4,Math.max(0,Math.ceil(-Math.log10(step))));
+  return v.toLocaleString('ja-JP',{maximumFractionDigits:digits});
+}
 function updateTrendCursor(){
   const svg=document.getElementById('trendChartSvg');
   if(!svg||!trendChartWidth||!trendChartSeries.length)return;
@@ -1247,7 +1299,7 @@ function renderTrendChart(force=false){
   const svg=document.getElementById('trendChartSvg');
   if(!svg)return;
   const box=svg.getBoundingClientRect();
-  const width=Math.max(80,Math.round(box.width||svg.parentElement?.clientWidth||280));
+  const width=Math.max(100,Math.round(box.width||svg.parentElement?.clientWidth||440));
   const key=mode+'|'+(selectedCity||'ALL')+'|'+width;
   if(!force&&key===trendChartCacheKey){updateTrendCursor();return;}
   trendChartCacheKey=key;
@@ -1262,20 +1314,26 @@ function renderTrendChart(force=false){
   const {left:l,right:marginRight,top,bottom,height,yearsY}=TREND_PLOT;
   const r=width-marginRight,span=r-l;
   svg.setAttribute('viewBox','0 0 '+width+' '+height);
-  let min=valid.length?Math.min(...valid):0;
-  let max=valid.length?Math.max(...valid):1;
-  if(TREND_SIGNED_MODES.has(mode)){min=Math.min(0,min);max=Math.max(0,max);}
-  const padding=(max-min||Math.max(1,Math.abs(max)))*.13;
-  min-=padding;max+=padding;
+  const scale=trendAxisScale(valid,mode);
+  const {min,max,ticks,step}=scale;
   const x=i=>l+span*i/(DATA.years.length-1);
   const y=v=>bottom-(v-min)/(max-min)*(bottom-top);
-  let markup='<line x1="'+l+'" y1="'+bottom+'" x2="'+r+'" y2="'+bottom+'" stroke="#cdd3cf" stroke-width="1"/>';
-  markup+='<line x1="'+l+'" y1="'+top+'" x2="'+r+'" y2="'+top+'" stroke="#e7eae7" stroke-width="1"/>';
-  if(min<0&&max>0){const z=y(0);markup+='<line x1="'+l+'" y1="'+z+'" x2="'+r+'" y2="'+z+'" stroke="#a5b2a2" stroke-width="1" stroke-dasharray="2 4"/>';}
+  const unit=trendAxisUnit(mode);
+  // Y axis labels are outside the plot, leaving all values readable.
+  let markup='<text x="'+(l-7)+'" y="11" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#606963">'+unit+'</text>';
+  for(const tick of ticks){
+    const yy=y(tick);
+    const isZero=Math.abs(tick)<step*1e-7;
+    markup+='<line x1="'+l+'" y1="'+yy.toFixed(2)+'" x2="'+r+'" y2="'+yy.toFixed(2)+'" stroke="'+(isZero?'#aeb9a7':'#e7ebe7')+'" stroke-width="'+(isZero?'1.1':'1')+'"'+(isZero?' stroke-dasharray="3 4"':'')+' pointer-events="none"/>';
+    markup+='<line x1="'+(l-4)+'" y1="'+yy.toFixed(2)+'" x2="'+l+'" y2="'+yy.toFixed(2)+'" stroke="#9ea7a0" stroke-width="1" pointer-events="none"/>';
+    markup+='<text x="'+(l-8)+'" y="'+(yy+3.4).toFixed(2)+'" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#6c746e" pointer-events="none">'+trendAxisNumber(tick,step)+'</text>';
+  }
+  markup+='<line x1="'+l+'" y1="'+top+'" x2="'+l+'" y2="'+bottom+'" stroke="#b7c0b9" stroke-width="1.1" pointer-events="none"/>';
+  markup+='<line x1="'+l+'" y1="'+bottom+'" x2="'+r+'" y2="'+bottom+'" stroke="#bbc5bd" stroke-width="1" pointer-events="none"/>';
   for(const year of [2007,2010,2015,2020,2025]){
     const i=DATA.years.indexOf(year),xx=x(i);
     const align=year===2007?'start':year===2025?'end':'middle';
-    markup+='<text x="'+xx.toFixed(2)+'" y="'+yearsY+'" text-anchor="'+align+'" font-size="10" font-family="Inter, sans-serif" fill="#747b77">'+year+'</text>';
+    markup+='<text x="'+xx.toFixed(2)+'" y="'+yearsY+'" text-anchor="'+align+'" font-size="10" font-family="Inter, sans-serif" fill="#747b77" pointer-events="none">'+year+'</text>';
   }
   if(valid.length){
     let previous=false,paths=[],chunk=[];
@@ -1288,9 +1346,9 @@ function renderTrendChart(force=false){
       previous=true;
     });
     if(chunk.length>1)paths.push(chunk.join(' '));
-    for(const p of paths){markup+='<path d="'+p+'" fill="none" stroke="#5a722b" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>';}
+    for(const p of paths){markup+='<path d="'+p+'" fill="none" stroke="#5a722b" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>';}
   }else{
-    markup+='<text x="'+width/2+'" y="75" text-anchor="middle" font-size="11" fill="#666" pointer-events="none">データ未収録</text>';
+    markup+='<text x="'+(l+r)/2+'" y="77" text-anchor="middle" font-size="11" fill="#666" pointer-events="none">データ未収録</text>';
   }
   markup+='<line id="trendCurrentLine" x1="'+l+'" x2="'+l+'" y1="'+(top-3)+'" y2="'+(bottom+3)+'" stroke="#2e3c21" stroke-width="1.5" stroke-dasharray="3 5" pointer-events="none"/>';
   markup+='<circle id="trendCurrentDot" cx="'+l+'" cy="55" r="4.5" fill="#fff" stroke="#5a722b" stroke-width="2.2" visibility="hidden" pointer-events="none"/>';
