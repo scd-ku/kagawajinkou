@@ -1132,8 +1132,7 @@ canvas.addEventListener('pointerup',e=>{
 // Measured municipality x prefecture migration; never infer unlisted routes from totals.
 const externalFlowGroup=new THREE.Group(),externalFlowLabelGroup=new THREE.Group(),externalFlowBallGroup=new THREE.Group();
 world.add(externalFlowGroup,externalFlowLabelGroup,externalFlowBallGroup);
-const externalInToggle=document.getElementById('externalInToggle');
-const externalOutToggle=document.getElementById('externalOutToggle');
+const externalFlowToggle=document.getElementById('externalFlowToggle');
 const externalFlowsStatus=document.getElementById('externalFlowsStatus');
 const externalFlowsSource=document.getElementById('externalFlowsSource');
 let externalFlowData={schema:1,years:{},sources:{}},externalFlowCache='',externalFlowParticles=[];
@@ -1228,121 +1227,120 @@ function externalRibbon(curve,width,hex,opacity){
   const mesh=new THREE.Mesh(geo,material);
   mesh.renderOrder=37;return mesh;
 }
+
+let sharedRoadScale={routeMax:1,netMax:1};
+function currentExternalAnnualData(){
+  const low=Math.floor(currentYearPos),high=Math.min(DATA.years.length-1,low+1),t=currentYearPos-low;
+  const before=externalFlowData.years?.[String(DATA.years[low])],after=externalFlowData.years?.[String(DATA.years[high])];
+  if(high===low||t<.001)return before||{};
+  if(t>.999)return after||{};
+  if(!before||!after)return {};
+  return Object.fromEntries(Object.entries(before).map(([city,places])=>[
+    city,Object.fromEntries(Object.entries(places)
+      .filter(([place])=>Array.isArray(after[city]?.[place]))
+      .map(([place,v])=>[place,v.map((n,i)=>n*(1-t)+after[city][place][i]*t)]))
+  ]));
+}
+function externalCounts(v,gender){
+  const inbound=gender==='male'?v[0]:gender==='female'?v[1]:v[0]+v[1];
+  const outbound=gender==='male'?v[2]:gender==='female'?v[3]:v[2]+v[3];
+  return {inbound,outbound,total:inbound+outbound,net:inbound-outbound};
+}
+function sharedSlopeDrop(net){
+  const v=Math.abs(net);
+  return v<1e-8?0:slopeScale*(1.5+17*Math.pow(v/Math.max(1,sharedRoadScale.netMax),.84));
+}
 function renderExternalFlows(force=false){
-  const enabledIn=externalInToggle.checked,enabledOut=externalOutToggle.checked;
   const year=DATA.years[Math.round(currentYearPos)];
-  const step=Math.round(currentYearPos*4)/4;
-  const key=[enabledIn,enabledOut,year,step,selectedCity||'',sexMode,externalFlowData.updated||'seed'].join('|');
+  const key=[externalFlowToggle.checked,year,Math.round(currentYearPos*4)/4,selectedCity||'',sexMode,showParticles,showLabels,
+    externalFlowData.updated||'seed',sharedRoadScale.routeMax,sharedRoadScale.netMax].join('|');
   if(!force&&key===externalFlowCache)return;
   externalFlowCache=key;
   clearGroup(externalFlowGroup);clearGroup(externalFlowLabelGroup);clearGroup(externalFlowBallGroup);
   externalFlowParticles=[];
-  // During playback, interpolate only when both annual official tables are present.
-  // An unrecorded interval must not jump to the future year's numbers.
-  const lower=Math.floor(currentYearPos),upper=Math.min(DATA.years.length-1,lower+1);
-  const fraction=currentYearPos-lower;
-  const interpolating=fraction>.001&&fraction<.999;
-  const lowData=externalFlowData.years?.[String(DATA.years[lower])];
-  const highData=externalFlowData.years?.[String(DATA.years[upper])];
-  const yearData=interpolating
-    ? (lowData&&highData ? Object.fromEntries(Object.entries(lowData).map(([city,prefs])=>[
-        city,Object.fromEntries(Object.entries(prefs).filter(([pref])=>Array.isArray(highData[city]?.[pref])).map(([pref,v])=>[
-          pref,v.map((n,i)=>n*(1-fraction)+highData[city][pref][i]*fraction)
-        ]))
-      ])) : {})
-    : (externalFlowData.years?.[String(year)]||{});
-  const available=Object.keys(yearData).filter(city=>Object.keys(yearData[city]).length).length;
+  const yearData=currentExternalAnnualData();
+  const available=Object.values(yearData).filter(row=>Object.keys(row).length).length;
   externalFlowsSource.href=externalFlowData.sources?.[String(year)]||'https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/2025jinkoido.html';
-  if(!enabledIn&&!enabledOut){
-    externalFlowsStatus.textContent=available?year+'年：県外の移動先別データ '+available+'市町分を読み込み済み（表示OFF）':year+'年：県外の移動先別データは未収録です。';
+  if(!externalFlowToggle.checked){
+    externalFlowsStatus.textContent=available?year+'年：'+available+'市町の県外移動データを読み込み済み（表示OFF）':year+'年の県外移動先別データは未収録です。';
     return;
   }
-  if(!available){
-    externalFlowsStatus.textContent=year+'年の県外移動先別データはまだ未収録です。推計値の道路は表示しません。';
-    return;
-  }
+  if(!available){externalFlowsStatus.textContent=year+'年の県外移動先別データは未収録です。推計値の道路は描きません。';return;}
   let records=[];
   for(const [city,prefs] of Object.entries(yearData)){
     if(selectedCity&&city!==selectedCity)continue;
-    for(const [place,v] of Object.entries(prefs)){
-      if(!PREFECTURE_GEO[place]||!Array.isArray(v)||v.length!==4)continue;
-      if(!v.every(n=>Number.isFinite(n)&&n>=0))continue;
-      const total=v.reduce((a,b)=>a+b,0);
-      if(total<1)continue;
-      records.push({city,place,values:v,total,year});
+    for(const [place,values] of Object.entries(prefs)){
+      if(!PREFECTURE_GEO[place]||!Array.isArray(values)||values.length!==4||values.some(v=>!Number.isFinite(v)||v<0))continue;
+      const total=values.reduce((a,b)=>a+b,0);
+      if(total>.5)records.push({city,place,values,total,year});
     }
   }
   records.sort((a,b)=>b.total-a.total);
-  // Avoid a wall of labels when the province is not filtered by city.
-  const limit=selectedCity?10:Math.min(18,Math.max(8,available*1.4));
-  records=records.slice(0,limit);
-  const max=Math.max(1,...records.map(r=>r.total));
-  const maxNet=Math.max(1,...records.map(r=>Math.abs((r.values[0]+r.values[1])-(r.values[2]+r.values[3]))));
+  records=records.slice(0,selectedCity?10:18);
   const topOfColumn=city=>{
-    const cylinder=supportMeshes.get(city);
-    return cylinder?cylinder.position.y+cylinder.scale.y*.5:Math.max(8,latestHeights[city]||8)+35;
+    const cyl=supportMeshes.get(city);
+    return cyl?cyl.position.y+cyl.scale.y*.5:Math.max(8,latestHeights[city]||8)+35;
   };
-  records.forEach((rec,index)=>{
-    const border=externalBorderPoint(rec.city,rec.place);if(!border)return;
-    const variants=sexMode==='compare'?['male','female']:[sexMode];
-    for(const gender of variants){
-      const v=rec.values;
-      const inbound=gender==='male'?v[0]:gender==='female'?v[1]:v[0]+v[1];
-      const outbound=gender==='male'?v[2]:gender==='female'?v[3]:v[2]+v[3];
-      const net=inbound-outbound;
-      const lanes=[enabledIn&&inbound>0?'in':null,enabledOut&&outbound>0?'out':null].filter(Boolean);
-      for(const direction of lanes){
-        const magnitude=direction==='in'?inbound:outbound;
-        const origin=DATA.positions[rec.city];
-        const lateral=new THREE.Vector2(-border.direction.y,border.direction.x);
-        const side=(direction==='in'?-1:1)*(gender==='male'?4:gender==='female'?7:3.7);
-        const departure=new THREE.Vector3(origin[0]+lateral.x*side,topOfColumn(rec.city)+3,origin[1]+lateral.y*side);
-        const heightDelta=Math.sign(net)*Math.min(41,4+37*Math.sqrt(Math.abs(net)/maxNet));
-        const end=new THREE.Vector3(border.x+lateral.x*side,departure.y+heightDelta,border.z+lateral.y*side);
-        const rise=28+14*Math.sqrt(rec.total/max);
-        const bezier=new THREE.CubicBezierCurve3(departure,
-          departure.clone().add(new THREE.Vector3(border.direction.x*15,rise,border.direction.y*15)),
-          new THREE.Vector3(end.x-border.direction.x*26,end.y+rise*.77,end.z-border.direction.y*26),end);
-        const color=gender==='male'?0xa3cef0:gender==='female'?0xf3b6c1:0xffffff;
-        const width=Math.max(1,Math.min(5,1.5+3*Math.sqrt(rec.total/max)));
-        const mesh=externalRibbon(bezier,width,color,.92);
-        mesh.userData={type:'externalRoad',record:rec};
-        externalFlowGroup.add(mesh);
-        if(showParticles){
-          const sphere=new THREE.Mesh(new THREE.SphereGeometry(1.4,7,6),
-            new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.8,depthWrite:false}));
-          externalFlowBallGroup.add(sphere);
-          externalFlowParticles.push({mesh:sphere,curve:bezier,direction,phase:(index*.117+(direction==='in'?.31:0))%1,speed:.18+.09*Math.sqrt(magnitude/max)});
+  for(let index=0;index<records.length;index++){
+    const record=records[index];
+    const border=externalBorderPoint(record.city,record.place);
+    if(!border)continue;
+    const pos=DATA.positions[record.city],lateral=new THREE.Vector2(-border.direction.y,border.direction.x);
+    const top=topOfColumn(record.city)+3;
+    const genders=sexMode==='compare'?['male','female']:[sexMode];
+    for(const gender of genders){
+      const flow=externalCounts(record.values,gender);
+      if(flow.total<.5)continue;
+      const side=sexMode==='compare'?(gender==='male'?-4.4:4.4):0;
+      const start=new THREE.Vector3(pos[0]+lateral.x*side,top,pos[1]+lateral.y*side);
+      // Inbound surplus: outside end is higher, and balls descend to the city.
+      // Outbound surplus: outside end is lower, and balls descend from the city.
+      const endY=top+Math.sign(flow.net)*sharedSlopeDrop(flow.net);
+      const end=new THREE.Vector3(border.x+lateral.x*side,endY,border.z+lateral.y*side);
+      const width=sexMode==='compare'
+        ?1.3+9.5*Math.pow(flow.total/Math.max(1,sharedRoadScale.routeMax),.73)
+        :1.5+11*Math.pow(flow.total/Math.max(1,sharedRoadScale.routeMax),.73);
+      const rise=16+Math.min(13,6*Math.sqrt(width));
+      const curve=new THREE.CubicBezierCurve3(start,
+        start.clone().add(new THREE.Vector3(border.direction.x*16,rise,border.direction.y*16)),
+        new THREE.Vector3(end.x-border.direction.x*24,end.y+rise*.65,end.z-border.direction.y*24),end);
+      const color=gender==='male'?0xa3cef0:gender==='female'?0xf3b6c1:0xffffff;
+      const mesh=externalRibbon(curve,width,color,.91);
+      mesh.userData={type:'externalRoad',record};
+      externalFlowGroup.add(mesh);
+      if(showParticles&&Math.abs(flow.net)>.001){
+        const count=Math.max(1,Math.min(9,Math.round(1+6*Math.sqrt(flow.total/Math.max(1,sharedRoadScale.routeMax)))));
+        for(let n=0;n<count;n++){
+          const ball=new THREE.Mesh(new THREE.SphereGeometry(Math.max(.88,Math.min(1.55,width*.12)),8,7),
+            new THREE.MeshBasicMaterial({color,opacity:.75,transparent:true,depthWrite:false}));
+          externalFlowBallGroup.add(ball);
+          externalFlowParticles.push({mesh:ball,curve,direction:flow.net>0?'in':'out',phase:n/count,speed:.55+1.7*Math.sqrt(width/12)});
         }
       }
     }
-    if(index<(selectedCity?9:9)){
-      const direction=border.direction;
-      const sprite=externalLabelSprite(rec.place);
-      const base=topOfColumn(rec.city);
-      const delta=(rec.values[0]+rec.values[1])-(rec.values[2]+rec.values[3]);
-      sprite.position.set(border.x+direction.x*14,base+Math.sign(delta)*Math.min(41,4+37*Math.sqrt(Math.abs(delta)/maxNet))+11+(index%3)*7,border.z+direction.y*14);
-      externalFlowLabelGroup.add(sprite);
+    if(showLabels&&index<9){
+      const totals=externalCounts(record.values,'total'),name=externalLabelSprite(record.place);
+      name.position.set(border.x+border.direction.x*12,
+        top+Math.sign(totals.net)*sharedSlopeDrop(totals.net)+10+(index%3)*6,border.z+border.direction.y*12);
+      externalFlowLabelGroup.add(name);
     }
-  });
+  }
   let summary='';
   if(selectedCity&&yearData[selectedCity]){
-    const counts=Object.values(yearData[selectedCity]).reduce((a,v)=>[a[0]+v[0]+v[1],a[1]+v[2]+v[3]],[0,0]);
-    summary=selectedCity+'の県外移動：転入 '+fmt(counts[0])+'人／転出 '+fmt(counts[1])+'人。';
+    const v=Object.values(yearData[selectedCity]).reduce((sum,r)=>[sum[0]+r[0]+r[1],sum[1]+r[2]+r[3]],[0,0]);
+    summary=selectedCity+'：転入 '+fmt(v[0])+'人／転出 '+fmt(v[1])+'人。';
   }
-  externalFlowsStatus.textContent=year+'年：'+available+'市町・上位'+records.length+'接続先を表示。'+summary+
-    '道路は県境でフェード。国外の人数は集計に含みますが、架空の地理的位置は与えません。';
+  externalFlowsStatus.textContent=year+'年・'+available+'市町。上位'+records.length+'接続先、'+(sexMode==='compare'?'男女各1本':'各1本')+'の坂道。'+summary+'県内と共通スケール。国外への道路は描きません。';
 }
 function updateExternalFlowParticles(deltaSeconds){
   for(const p of externalFlowParticles){
-    const t=(p.phase+particleClock*.0001*p.speed)%1;
+    const t=(p.phase+particleClock*.00018*p.speed*speedScale)%1;
     p.mesh.position.copy(p.curve.getPoint(p.direction==='in'?1-t:t));
     p.mesh.material.opacity=(t<.75?.72:Math.max(0,.72*(1-t)/.25));
   }
 }
 function onExternalControlChange(){externalFlowCache='';renderExternalFlows(true);}
-externalInToggle.addEventListener('change',onExternalControlChange);
-externalOutToggle.addEventListener('change',onExternalControlChange);
+externalFlowToggle.addEventListener('change',onExternalControlChange);
 async function loadExternalFlowRecords(){
   try{
     const response=await fetch('data/kagawa_prefecture_flows.json',{cache:'no-store'});
@@ -1350,7 +1348,7 @@ async function loadExternalFlowRecords(){
     const value=await response.json();
     if(value.schema!==1||!value.years||typeof value.years!=='object')throw new Error('データ形式が正しくありません');
     externalFlowData=value;externalFlowData.updated=Date.now();
-    renderExternalFlows(true);
+    redrawRoads();
   }catch(error){
     externalFlowsStatus.textContent='県外の移動先別データを読み込めませんでした：'+error.message;
   }
@@ -1401,8 +1399,19 @@ function redrawRoads(){
   }).join('');
 
   const maxSurface=Math.max(...DATA.municipalities.map(n=>heights[n]||1));
-  const routeMax = Math.max(1,...arr.map(r=> sexMode==='compare'?Math.max(r.maleTotal,r.femaleTotal):sexMode==='male'?r.maleTotal:sexMode==='female'?r.femaleTotal:r.total));
-  const netMax = Math.max(1,...arr.map(r=> sexMode==='compare'?Math.max(r.maleNet,r.femaleNet):sexMode==='male'?r.maleNet:sexMode==='female'?r.femaleNet:r.net));
+  // Share the same magnitude reference across domestic and prefecture-bound roads.
+  const sample=Object.values(currentExternalAnnualData()).flatMap(places=>Object.entries(places)
+    .filter(([pref,v])=>PREFECTURE_GEO[pref]&&Array.isArray(v)&&v.length===4)
+    .map(([,v])=>v));
+  const genders=sexMode==='compare'?['male','female']:[sexMode];
+  const extFlows=sample.flatMap(v=>genders.map(g=>externalCounts(v,g)));
+  const routeMax=Math.max(1,
+    ...arr.map(r=>sexMode==='compare'?Math.max(r.maleTotal,r.femaleTotal):sexMode==='male'?r.maleTotal:sexMode==='female'?r.femaleTotal:r.total),
+    ...extFlows.map(v=>v.total));
+  const netMax=Math.max(1,
+    ...arr.map(r=>sexMode==='compare'?Math.max(r.maleNet,r.femaleNet):sexMode==='male'?r.maleNet:sexMode==='female'?r.femaleNet:r.net),
+    ...extFlows.map(v=>Math.abs(v.net)));
+  sharedRoadScale={routeMax,netMax};
   const pairDropMax = Math.max(0,...arr.map(r=>{
     const dn = v=>v===0?0:slopeScale*(1.5+17*Math.pow(v/Math.max(1,netMax),.84));
     return sexMode==='compare'?Math.max(dn(r.maleNet),dn(r.femaleNet)):dn(sexMode==='male'?r.maleNet:sexMode==='female'?r.femaleNet:r.net);
