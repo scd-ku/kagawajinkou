@@ -62,7 +62,10 @@ def excel_url(year):
     links=[]
     for a in soup.select("a[href]"):
         href=urljoin(url,a["href"])
-        title=norm(a.get_text(" ",strip=True)+" "+unquote(href))
+        # Prefectural annual report tables keep the table description in a sibling
+        # cell, while the actual link text is only "第6表". Search the whole row.
+        row_text=a.find_parent("tr").get_text(" ",strip=True) if a.find_parent("tr") else ""
+        title=norm(a.get_text(" ",strip=True)+" "+row_text+" "+unquote(href))
         if ".xlsx" not in href.lower():continue
         if year>=2015:
             if "県外移動者数" in title and "市町別" in title:
@@ -159,7 +162,7 @@ def main():
     if not updated:
         raise SystemExit("No yearly official data could be validated; original JSON unchanged")
     document["schema"]=1
-    document["complete"]=all(len(block)==17 for block in document["years"].values())
+    document["complete"]=len(document["years"])==19 and all(len(block)==17 for block in document["years"].values())
     document["label"]="香川県人口移動調査・市町別、転入前住所地/転出後住所地別、男女別県外移動者数（公式値）"
     OUT.parent.mkdir(parents=True,exist_ok=True)
     OUT.write_text(json.dumps(document,ensure_ascii=False,indent=1)+"\n",encoding="utf-8")
