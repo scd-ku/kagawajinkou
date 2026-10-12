@@ -418,7 +418,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
     <label><input type="checkbox" id="externalOutToggle">県外への転出</label>
   </div>
   <p class="external-flow-note">白：男女総数／淡青：男性／淡赤：女性。弧の到達位置は移動先の方向、端点の高さは転入−転出差です。道は県境で淡く消えます。国外は地理方向を持たないため描きません。</p>
-  <p id="externalFlowsStatus" role="status">市町村・移動先別の公式データを読み込み中…</p>
+  <p id="externalFlowsStatus" role="status">市町村・移動先別の公式データを読み込み中…</p><a id="externalFlowsSource" class="mini" href="https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/2025jinkoido.html" target="_blank" rel="noopener">使用した統計資料 ↗</a>
 </section>
   <h3>県内転居の男女別表示</h3>
   <div class="sexModes" role="group" aria-label="転居者の性別を切り替える">
@@ -1107,6 +1107,7 @@ world.add(externalFlowGroup,externalFlowLabelGroup,externalFlowBallGroup);
 const externalInToggle=document.getElementById('externalInToggle');
 const externalOutToggle=document.getElementById('externalOutToggle');
 const externalFlowsStatus=document.getElementById('externalFlowsStatus');
+const externalFlowsSource=document.getElementById('externalFlowsSource');
 let externalFlowData={schema:1,years:{},sources:{}},externalFlowCache='',externalFlowParticles=[];
 const PREFECTURE_GEO={
  '北海道':[141.35,43.06],'青森県':[140.74,40.82],'岩手県':[141.15,39.70],
@@ -1183,9 +1184,6 @@ function externalRibbon(curve,width,hex,opacity){
       const a=opacity*(t>.69?Math.pow(Math.max(0,(1-t)/.31),1.5):1);
       vertices.push([{p:points[k].clone().add(side),a},{p:points[k].clone().sub(side),a}]);
     }
-    for(const [a,b] of [[vertices[0][0],vertices[0][1]],[vertices[1][0],vertices[1][1]],[vertices[1][0],vertices[0][1]],[vertices[1][1],vertices[0][0]]]){
-      // Filled by two triangles below.
-    }
     for(const v of [vertices[0][0],vertices[0][1],vertices[1][0],vertices[1][0],vertices[0][1],vertices[1][1]]){
       positions.push(v.p.x,v.p.y,v.p.z);fade.push(v.a);
     }
@@ -1211,8 +1209,22 @@ function renderExternalFlows(force=false){
   externalFlowCache=key;
   clearGroup(externalFlowGroup);clearGroup(externalFlowLabelGroup);clearGroup(externalFlowBallGroup);
   externalFlowParticles=[];
-  const yearData=externalFlowData.years?.[String(year)]||{};
-  const available=Object.keys(yearData).length;
+  // During playback, interpolate only when both annual official tables are present.
+  // An unrecorded interval must not jump to the future year's numbers.
+  const lower=Math.floor(currentYearPos),upper=Math.min(DATA.years.length-1,lower+1);
+  const fraction=currentYearPos-lower;
+  const interpolating=fraction>.001&&fraction<.999;
+  const lowData=externalFlowData.years?.[String(DATA.years[lower])];
+  const highData=externalFlowData.years?.[String(DATA.years[upper])];
+  const yearData=interpolating
+    ? (lowData&&highData ? Object.fromEntries(Object.entries(lowData).map(([city,prefs])=>[
+        city,Object.fromEntries(Object.entries(prefs).filter(([pref])=>Array.isArray(highData[city]?.[pref])).map(([pref,v])=>[
+          pref,v.map((n,i)=>n*(1-fraction)+highData[city][pref][i]*fraction)
+        ]))
+      ])) : {})
+    : (externalFlowData.years?.[String(year)]||{});
+  const available=Object.keys(yearData).filter(city=>Object.keys(yearData[city]).length).length;
+  externalFlowsSource.href=externalFlowData.sources?.[String(year)]||'https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/2025jinkoido.html';
   if(!enabledIn&&!enabledOut){
     externalFlowsStatus.textContent=available?year+'年：県外の移動先別データ '+available+'市町分を読み込み済み（表示OFF）':year+'年：県外の移動先別データは未収録です。';
     return;
@@ -1285,8 +1297,13 @@ function renderExternalFlows(force=false){
       externalFlowLabelGroup.add(sprite);
     }
   });
-  externalFlowsStatus.textContent=year+'年：'+available+'市町・'+records.length+'接続先を表示。'+(externalFlowData.complete?'':'収録済みの地域のみ表示。')+
-    '高度は転入−転出、白／淡青／淡赤は性別表示と連動します。';
+  let summary='';
+  if(selectedCity&&yearData[selectedCity]){
+    const counts=Object.values(yearData[selectedCity]).reduce((a,v)=>[a[0]+v[0]+v[1],a[1]+v[2]+v[3]],[0,0]);
+    summary=selectedCity+'の県外移動：転入 '+fmt(counts[0])+'人／転出 '+fmt(counts[1])+'人。';
+  }
+  externalFlowsStatus.textContent=year+'年：'+available+'市町・上位'+records.length+'接続先を表示。'+summary+
+    '道路は県境でフェード。国外の人数は集計に含みますが、架空の地理的位置は与えません。';
 }
 function updateExternalFlowParticles(deltaSeconds){
   for(const p of externalFlowParticles){
