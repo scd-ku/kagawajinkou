@@ -141,6 +141,42 @@ def parse_workbook(data):
         complete[city]=blocks
     return complete
 
+
+def parse_wide_workbook(data):
+    """Pre-2017 sheets put city names across columns (each city occupies six values)."""
+    wb=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    verified={}
+    for sheet in wb.worksheets:
+        rows=list(sheet.values)
+        for header_index,header in enumerate(rows[:20]):
+            city_columns={norm(v):i for i,v in enumerate(header) if norm(v) in CITIES}
+            if not city_columns:continue
+            all_rows=rows[header_index+1:]
+            totals=None
+            for row in all_rows[:15]:
+                if any(norm(v) in ("総数","総計") for v in row[:4] if v is not None):
+                    totals=row
+                    break
+            if not totals:continue
+            for city,col in city_columns.items():
+                base=[num(v) for v in totals[col:col+6]]
+                if len(base)!=6 or any(v is None for v in base) or base[0]!=base[1]+base[2] or base[3]!=base[4]+base[5]:continue
+                if not base[0] and not base[3]:continue
+                prefectures={}
+                for row in all_rows:
+                    named=next((norm(v) for v in row[:4] if norm(v) in PREFS),None)
+                    if not named:continue
+                    values=[num(v) for v in row[col:col+6]]
+                    if len(values)!=6 or any(v is None for v in values):continue
+                    if values[0]!=values[1]+values[2] or values[3]!=values[4]+values[5]:continue
+                    prefectures[named]=[values[1],values[2],values[4],values[5]]
+                if len(prefectures)<35:continue
+                summed=[sum(v[i] for v in prefectures.values()) for i in range(4)]
+                difference=sum(abs(summed[i]-base[j]) for i,j in enumerate([1,2,4,5]))
+                if difference>max(50,(base[0]+base[3])*.05):continue
+                verified[city]=prefectures
+    return verified
+
 def main():
     document=json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {"schema":1,"years":{},"sources":{}}
     updated=[]
@@ -157,6 +193,7 @@ def main():
             for one in urls:
                 blob=get(one).content
                 records.update(parse_workbook(blob))
+                records.update(parse_wide_workbook(blob))
             if year in (2013,2014,2015,2016):
                 workbook=load_workbook(io.BytesIO(blob),read_only=True,data_only=True)
                 probes=[]
