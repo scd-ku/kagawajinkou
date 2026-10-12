@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "label": "香川県人口移動調査・市町別、転入前住所地/転出後住所地別、男女別県外移動者数（公式値）",
- "complete": true,
+ "complete": false,
  "sources": {
   "2025": "https://www.pref.kagawa.lg.jp/documents/62699/hyo004.xlsx"
  },
