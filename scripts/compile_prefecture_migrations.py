@@ -143,13 +143,27 @@ def parse_workbook(data):
 def main():
     document=json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {"schema":1,"years":{},"sources":{}}
     updated=[]
+    diagnostics={}
     for year in range(2025,2006,-1):
         try:
             url=excel_url(year)
             if not url:
                 print(f"{year}: source not uniquely resolvable; skip")
                 continue
-            records=parse_workbook(get(url).content)
+            blob=get(url).content
+            records=parse_workbook(blob)
+            if year==2024:
+                workbook=load_workbook(io.BytesIO(blob),read_only=True,data_only=True)
+                probes=[]
+                for sheet in workbook.worksheets[:3]:
+                    rows=list(sheet.values)
+                    found=[]
+                    for i,row in enumerate(rows):
+                        if any(norm(v) in CITIES for v in row[:8] if v is not None):
+                            found.append({"row":i+1,"cells":[str(v)[:70] for v in row[:16]]})
+                        if len(found)>=3:break
+                    probes.append({"name":sheet.title,"rows":len(rows),"cityMarkers":found})
+                diagnostics[str(year)]={"url":url,"bytes":len(blob),"cityCount":len(records),"sheets":probes}
             if len(records)<12:
                 print(f"{year}: only {len(records)} city sheets validated; skip",file=sys.stderr)
                 continue
@@ -158,7 +172,10 @@ def main():
             updated.append(year)
             print(f"{year}: verified {len(records)} cities, {sum(len(v) for v in records.values())} prefecture pairs")
         except Exception as ex:
+            diagnostics[str(year)]={"error":str(ex)}
             print(f"{year}: {ex}",file=sys.stderr)
+    (OUT.parent/"prefecture_import_diagnostics.json").write_text(
+        json.dumps(diagnostics,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     if not updated:
         raise SystemExit("No yearly official data could be validated; original JSON unchanged")
     document["schema"]=1
