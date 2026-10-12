@@ -226,51 +226,48 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 
 
 
-/* Single-row desktop composition: indicators/playback | time series | view/speed */
-.toolbar{display:block;padding:13px 17px 12px;border-bottom:1px solid var(--hair)}
-.timeline-shell{display:grid;grid-template-columns:minmax(255px,325px) minmax(260px,1fr) minmax(195px,230px);gap:clamp(13px,1.3vw,24px);align-items:stretch;width:100%;min-width:0}
-.timeline-left,.timeline-right{display:flex;flex-direction:column;justify-content:space-between;gap:19px;min-width:0;padding:8px 0 20px}
-.timeline-center{min-width:0;align-self:stretch}
-.timeline-left .data-selector-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.14fr);gap:9px;width:100%;align-items:end}
+/* Refined chart-toolbar alignment: compact controls, continuous 3-column layout */
+.toolbar{display:block;padding:10px 16px 12px;border-bottom:1px solid var(--hair)}
+.timeline-shell{display:grid;grid-template-columns:292px minmax(0,1fr) 242px;align-items:center;gap:18px;width:100%;min-width:0}
+.timeline-left,.timeline-right{display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:0;padding:0;align-self:stretch}
+.timeline-center{min-width:0;align-self:center}
+.timeline-left .data-selector-group{display:grid;grid-template-columns:minmax(0,116px) minmax(0,168px);gap:8px;width:100%;align-items:end}
 .timeline-left .data-select-field{min-width:0}
 .timeline-left #dataCategory,.timeline-left #heightMode{width:100%;max-width:none}
-.timeline-left .data-select-field select{min-height:38px}
-.timeline-left .playback-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-width:0;margin:0}
-.timeline-left .playback-toolbar button{flex-shrink:0;padding:7px 9px;min-width:33px;min-height:37px}
-.timeline-left .playback-toolbar #playBtn{padding:7px 12px}
-.timeline-left #yearText{font-size:25px;font-weight:900;line-height:1;min-width:62px;letter-spacing:-.03em;text-align:center;margin-left:3px;font-variant-numeric:tabular-nums}
+.timeline-left .data-select-field select{min-height:38px;padding:6px 26px 6px 9px}
+.timeline-left .playback-toolbar{display:grid;grid-template-columns:88px 38px 38px minmax(0,1fr);align-items:center;gap:8px;width:100%;min-width:0;margin:0}
+.timeline-left .playback-toolbar button{width:100%;min-width:0;min-height:38px;padding:7px 5px;white-space:nowrap}
+.timeline-left .playback-toolbar #playBtn{padding:7px 8px}
+.timeline-left #yearText{font-size:26px;font-weight:900;min-width:0;text-align:right;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin:0}
 .timeline-right .view-control-set,.timeline-right .speed-control-set{display:flex;flex-direction:column;gap:5px;min-width:0}
-.timeline-right .view-control-set>span,.timeline-right .speed-control-set>span{font-size:10px;font-weight:750;letter-spacing:.035em;color:#62696d;line-height:1.2}
+.timeline-right .view-control-set>span,.timeline-right .speed-control-set>span,.timeline-right .speed-control-set>label{font-size:10px;font-weight:750;letter-spacing:.035em;color:#62696d;line-height:1.2}
 .timeline-right .view-control-buttons{display:flex;gap:8px;align-items:center;min-width:0}
-.timeline-right .view-control-buttons button{flex:1;min-width:0;padding:7px 6px;white-space:nowrap}
-.timeline-right #playSpeed{width:100%;max-width:none;min-width:0;min-height:38px;font-size:11px;padding:6px 24px 6px 9px}
+.timeline-right .view-control-buttons button{flex:1 1 0;min-width:0;padding:7px 6px;white-space:nowrap}
+.timeline-right #playSpeed{width:100%;max-width:none;min-width:0;min-height:38px;font-size:11px;padding:6px 25px 6px 10px}
 .trend-panel{width:100%;min-width:0;border:0;padding:0;margin:0;background:transparent;box-shadow:none}
-.trend-meta{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:22px;white-space:nowrap;overflow:hidden;font-size:10px;line-height:1.45;margin:0 0 2px}
+.trend-meta{display:flex;align-items:baseline;justify-content:space-between;gap:9px;min-height:18px;white-space:nowrap;overflow:hidden;font-size:10px;line-height:1.35;margin:0 0 3px}
 #trendSeriesTitle{color:#5b6262;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:750}
 #trendCurrentValue{flex-shrink:0;font-weight:800;color:#394b2f;font-variant-numeric:tabular-nums}
-#trendChartSvg{display:block;width:100%;height:166px;max-width:100%;margin:0;padding:0;background:none;box-shadow:none;cursor:ew-resize;touch-action:none;user-select:none}
+#trendChartSvg{display:block;width:100%;height:158px;max-width:100%;margin:0;padding:0;background:none;box-shadow:none;cursor:ew-resize;touch-action:none;user-select:none}
 #trendChartSvg:focus{outline:none}
 #trendChartSvg:focus-visible{outline:2px solid var(--olive);outline-offset:2px}
-@media(max-width:1300px){
- .timeline-shell{grid-template-columns:minmax(230px,265px) minmax(225px,1fr) minmax(185px,195px);gap:12px}
- .timeline-left .playback-toolbar{gap:5px}
- .timeline-left .playback-toolbar button{padding:7px 6px}
- .timeline-left .playback-toolbar #playBtn{padding:7px 8px}
- .timeline-left #yearText{font-size:23px;min-width:57px;margin-left:0}
+@media(max-width:1160px){
+ .timeline-shell{grid-template-columns:276px minmax(0,1fr) 215px;gap:14px}
+ .timeline-left .data-selector-group{grid-template-columns:minmax(0,111px) minmax(0,157px)}
+ .timeline-left .playback-toolbar{grid-template-columns:83px 36px 36px minmax(0,1fr);gap:7px}
+ .timeline-left #yearText{font-size:24px}
 }
-@media(max-width:1020px){
- .timeline-shell{grid-template-columns:minmax(0,1fr) minmax(190px,230px);grid-template-areas:"left right" "center center";row-gap:12px}
- .timeline-left{grid-area:left;max-width:360px;padding:0;gap:12px}
+@media(max-width:900px){
+ .timeline-shell{grid-template-columns:minmax(0,1fr) minmax(185px,220px);grid-template-areas:"left right" "center center";gap:14px}
+ .timeline-left{grid-area:left;max-width:292px;gap:10px}
  .timeline-center{grid-area:center}
- .timeline-right{grid-area:right;padding:0;gap:10px}
- .timeline-right .speed-control-set{margin-top:auto}
+ .timeline-right{grid-area:right;gap:10px}
 }
-@media(max-width:650px){
- .timeline-shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"left" "center" "right";gap:13px}
- .timeline-left{max-width:none}
- .timeline-right{flex-direction:row;flex-wrap:wrap;align-items:end;justify-content:space-between}
- .timeline-right .view-control-set{flex:1 1 180px}
- .timeline-right .speed-control-set{flex:1 1 175px}
+@media(max-width:620px){
+ .timeline-shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"left" "center" "right";gap:14px}
+ .timeline-left{max-width:292px}
+ .timeline-right{flex-direction:row;flex-wrap:wrap;align-items:end;gap:14px}
+ .timeline-right .view-control-set,.timeline-right .speed-control-set{flex:1 1 175px}
  .trend-meta{font-size:9px}
 }
 
@@ -293,7 +290,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
       <div class="timeline-center">
         <div class="trend-panel" id="trendPanel" aria-label="現在の表示指標の年次推移">
           <div class="trend-meta"><span id="trendSeriesTitle">香川県17市町計 ／ 人口の状況</span><span id="trendCurrentValue">2025</span></div>
-          <svg id="trendChartSvg" width="100%" height="166" role="slider" tabindex="0" aria-label="年度を変更するグラフ。左右矢印キー、またはドラッグで移動" aria-valuemin="2007" aria-valuemax="2025" aria-valuenow="2025" aria-valuetext="2025年"></svg>
+          <svg id="trendChartSvg" width="100%" height="158" role="slider" tabindex="0" aria-label="年度を変更するグラフ。左右矢印キー、またはドラッグで移動" aria-valuemin="2007" aria-valuemax="2025" aria-valuenow="2025" aria-valuetext="2025年"></svg>
         </div>
       </div>
       <div class="timeline-right">
@@ -1226,7 +1223,7 @@ function trendFormatValue(v,m){
 }
 
 // Axis margins are shared between the chart renderer, cursor, and pointer scrubbing.
-const TREND_PLOT={left:67,right:12,top:20,bottom:132,height:166,yearsY:157};
+const TREND_PLOT={left:49,right:11,top:17,bottom:122,height:158,yearsY:150};
 function trendAxisUnit(m){
   if(m==='neutral')return '一定';
   if(['population','births','deaths','naturalPop','socialPop'].includes(m))return '人';
@@ -1325,11 +1322,16 @@ function renderTrendChart(force=false){
     const yy=y(tick);
     const isZero=Math.abs(tick)<step*1e-7;
     markup+='<line x1="'+l+'" y1="'+yy.toFixed(2)+'" x2="'+r+'" y2="'+yy.toFixed(2)+'" stroke="'+(isZero?'#aeb9a7':'#e7ebe7')+'" stroke-width="'+(isZero?'1.1':'1')+'"'+(isZero?' stroke-dasharray="3 4"':'')+' pointer-events="none"/>';
-    markup+='<line x1="'+(l-4)+'" y1="'+yy.toFixed(2)+'" x2="'+l+'" y2="'+yy.toFixed(2)+'" stroke="#9ea7a0" stroke-width="1" pointer-events="none"/>';
+    markup+='<line x1="'+l+'" y1="'+yy.toFixed(2)+'" x2="'+(l+6)+'" y2="'+yy.toFixed(2)+'" stroke="#171717" stroke-width="1.2" pointer-events="none"/>';
     markup+='<text x="'+(l-8)+'" y="'+(yy+3.4).toFixed(2)+'" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#6c746e" pointer-events="none">'+trendAxisNumber(tick,step)+'</text>';
   }
-  markup+='<line x1="'+l+'" y1="'+top+'" x2="'+l+'" y2="'+bottom+'" stroke="#b7c0b9" stroke-width="1.1" pointer-events="none"/>';
-  markup+='<line x1="'+l+'" y1="'+bottom+'" x2="'+r+'" y2="'+bottom+'" stroke="#bbc5bd" stroke-width="1" pointer-events="none"/>';
+  markup+='<line x1="'+l+'" y1="'+top+'" x2="'+l+'" y2="'+bottom+'" stroke="#171717" stroke-width="1.25" pointer-events="none"/>';
+  markup+='<line x1="'+l+'" y1="'+bottom+'" x2="'+r+'" y2="'+bottom+'" stroke="#171717" stroke-width="1.25" pointer-events="none"/>';
+  // Annual ticks point inward; only five years are labeled to avoid crowding.
+  for(let i=0;i<DATA.years.length;i++){
+    const xx=x(i),major=[2007,2010,2015,2020,2025].includes(DATA.years[i]);
+    markup+='<line x1="'+xx.toFixed(2)+'" y1="'+bottom+'" x2="'+xx.toFixed(2)+'" y2="'+(bottom-(major?6:3.5))+'" stroke="#171717" stroke-width="1.1" pointer-events="none"/>';
+  }
   for(const year of [2007,2010,2015,2020,2025]){
     const i=DATA.years.indexOf(year),xx=x(i);
     const align=year===2007?'start':year===2025?'end':'middle';
@@ -1346,7 +1348,12 @@ function renderTrendChart(force=false){
       previous=true;
     });
     if(chunk.length>1)paths.push(chunk.join(' '));
-    for(const p of paths){markup+='<path d="'+p+'" fill="none" stroke="#5a722b" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>';}
+    for(const p of paths){markup+='<path d="'+p+'" fill="none" stroke="#5a722b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>';}
+    // A marker represents each observed year; never plot missing observations.
+    trendChartSeries.forEach((v,i)=>{
+      if(!Number.isFinite(v))return;
+      markup+='<circle cx="'+x(i).toFixed(2)+'" cy="'+y(v).toFixed(2)+'" r="2.7" fill="#fff" stroke="#5a722b" stroke-width="1.5" pointer-events="none"/>';
+    });
   }else{
     markup+='<text x="'+(l+r)/2+'" y="77" text-anchor="middle" font-size="11" fill="#666" pointer-events="none">データ未収録</text>';
   }
