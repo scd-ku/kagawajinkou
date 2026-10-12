@@ -1,4 +1,85 @@
 {
+  "2024": {
+    "url": "https://www.pref.kagawa.lg.jp/documents/54568/hyo006.xlsx",
+    "bytes": 176475,
+    "cityCount": 17,
+    "sheets": [
+      {
+        "name": "第6表　県外移動 R5 県計のみ",
+        "rows": 1012,
+        "cityMarkers": []
+      },
+      {
+        "name": "第6表　県外移動 R5 市部計以降",
+        "rows": 1041,
+        "cityMarkers": [
+          {
+            "row": 106,
+            "cells": [
+              "None",
+              "【高松市】",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None"
+            ]
+          },
+          {
+            "row": 158,
+            "cells": [
+              "None",
+              "【丸亀市】",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None"
+            ]
+          },
+          {
+            "row": 210,
+            "cells": [
+              "None",
+              "【坂出市】",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None",
+              "None"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "2021": {
     "error": "404 Client Error: Not Found for url: https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/2021jinkoido.html"
   },
