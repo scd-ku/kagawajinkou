@@ -230,7 +230,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 /* Precise three-column grid: compact controls | flexible chart | narrow camera/speed */
 .toolbar{display:block;padding:10px 14px 11px;border-bottom:1px solid var(--hair)}
 .timeline-shell{
- display:grid;grid-template-columns:268px minmax(0,1fr) 196px;
+ display:grid;grid-template-columns:308px minmax(0,1fr) 196px;
  gap:14px;width:100%;min-width:0;align-items:start;
 }
 .timeline-left,.timeline-right{
@@ -239,7 +239,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 }
 .timeline-center{align-self:start;min-width:0}
 .timeline-left .data-selector-group{
- display:grid;grid-template-columns:105px minmax(0,155px);
+ display:grid;grid-template-columns:140px minmax(0,155px);
  gap:8px;align-items:end;width:100%;min-width:0;
 }
 .timeline-left .data-select-field{min-width:0}
@@ -281,8 +281,8 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 #trendChartSvg:focus{outline:none}
 #trendChartSvg:focus-visible{outline:2px solid var(--olive);outline-offset:2px}
 @media(max-width:1100px){
- .timeline-shell{grid-template-columns:258px minmax(0,1fr) 184px;gap:12px}
- .timeline-left .data-selector-group{grid-template-columns:101px minmax(0,149px)}
+ .timeline-shell{grid-template-columns:300px minmax(0,1fr) 184px;gap:12px}
+ .timeline-left .data-selector-group{grid-template-columns:137px minmax(0,155px)}
  .timeline-left .playback-toolbar{grid-template-columns:78px 34px 34px minmax(0,1fr);gap:7px}
  .timeline-left #yearText{font-size:24px}
 }
@@ -291,13 +291,13 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
   grid-template-columns:minmax(0,1fr) 184px;
   grid-template-areas:"left right" "center center";row-gap:13px;
  }
- .timeline-left{grid-area:left;width:100%;max-width:268px}
+ .timeline-left{grid-area:left;width:100%;max-width:308px}
  .timeline-center{grid-area:center}
  .timeline-right{grid-area:right}
 }
 @media(max-width:600px){
  .timeline-shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"left" "center" "right";gap:12px}
- .timeline-left{max-width:268px}
+ .timeline-left{max-width:308px}
  .timeline-right{flex-direction:row;flex-wrap:wrap;gap:12px}
  .timeline-right .view-control-set,.timeline-right .speed-control-set{flex:1 1 170px}
  .trend-meta{font-size:9px}
