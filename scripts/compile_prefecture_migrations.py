@@ -22,7 +22,7 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/"data"/"kagawa_prefecture_flows.json"
 CITIES="高松市 丸亀市 坂出市 善通寺市 観音寺市 さぬき市 東かがわ市 三豊市 土庄町 小豆島町 三木町 直島町 宇多津町 綾川町 琴平町 多度津町 まんのう町".split()
 PREFS="北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県 国外".split()
-LEGACY={2007:834,2008:835,2009:836,2010:839,2011:838,2012:840,2013:217,2014:218,2015:219,2016:221,2017:277,2018:316,2019:363,2020:399,2021:538}
+LEGACY={2007:834,2008:835,2009:836,2010:837,2011:838,2012:840,2013:217,2014:218,2015:219,2016:221,2017:277,2018:316,2019:363,2020:399,2021:538}
 SESSION=requests.Session()
 SESSION.headers.update({"User-Agent":"Kagawa-University-Science-Communication-Data-Research/1.0"})
 
@@ -157,10 +157,10 @@ def main():
             for one in urls:
                 blob=get(one).content
                 records.update(parse_workbook(blob))
-            if year==2017:
+            if year in (2013,2014,2015,2016):
                 workbook=load_workbook(io.BytesIO(blob),read_only=True,data_only=True)
                 probes=[]
-                for sheet in workbook.worksheets[:3]:
+                for sheet in workbook.worksheets[:5]:
                     rows=list(sheet.values)
                     found=[]
                     for i,row in enumerate(rows):
