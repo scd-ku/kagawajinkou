@@ -377,7 +377,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
     <div id="mapLegend" class="hud legend-card" role="group" aria-label="地図の凡例">
   <div class="legend-title" id="mapLegendHeading">地図の凡例</div>
   <div class="legend-body" id="mapLegendBody"></div>
-</div><div id="hoverbox" class="hud"><h3>詳細</h3><div class="mini">市町村面や坂道をクリックすると、ここに値を表示します。</div></div>
+</div><div id="hoverbox" class="hud" aria-live="polite"><h3>香川県（17市町合計）</h3><div class="mini">県全体の統計を計算中…</div></div>
   </div>
   <div class="status" id="dataStatus">ドラッグ：回転 / ホイール：拡大縮小 / 右ドラッグ：平行移動。年度変化の速さは「再生速度」で設定します。「ゆっくり」は1年の補間18秒＋停止4秒で、球の移動も遅くなります。読み方は上部の「? 使い方」から表示できます。起動時に行政区域の形状・人口・面積の記録を読み込みます。通信不能時は右側の読込状況をご確認ください。</div>
 </div>
@@ -640,7 +640,7 @@ function clearCitySelection(){
   selectedCity=null;
   const vals=currentModeHeights(currentYearPos).vals,net=getInterpNet(currentYearPos);
   document.getElementById('hoverbox').classList.remove('selected-city');
-  setHoverHTML('<h3>詳細</h3><div class="mini">香川県17市町の総数表示。市町村をクリックすると、その市町村を強調します。</div>');
+  showPrefectureDetails();
   refreshSelectedOutline();
   applyMunicipalVisuals();updateCityList(vals,net);redrawRoads();renderTrendChart(true);
 }
@@ -1080,11 +1080,49 @@ function renderExtraDashboard(name){
   const ageHtml=aa?`<div style="margin-top:9px"><b>${ageYear}年の年齢構成${a?'':'（最新の収録年）'}</b><div>0〜14歳：${fmt(aa.age_0_14)}人（${fmt(aa.age_0_14_share,1)}%）</div><div>15〜64歳：${fmt(aa.age_15_64)}人（${fmt(aa.age_15_64_share,1)}%）</div><div>65歳以上：${fmt(aa.age_65_plus)}人（${fmt(aa.age_65_plus_share,1)}%）</div><div style="display:flex;height:13px;margin:7px 0;background:#eee;border:1px solid #aaa"><span style="width:${aa.age_0_14_share}%;background:#5fa8ff"></span><span style="width:${aa.age_15_64_share}%;background:#ffffff"></span><span style="width:${aa.age_65_plus_share}%;background:#f26b7a"></span></div><div style="font-size:10px;color:#777">年齢不詳：${fmt(aa.age_unknown)}人（構成比の分母から除外）</div></div>`:'';
   body.innerHTML=`<div style="font-size:14px;font-weight:900;margin-bottom:6px">${name}</div>${naturalHtml}${ageHtml}`;
 }
-function showMunicipalityDetails(name, modeValue, netValue) {
-  const valsPop=getInterpValues('population',currentYearPos), valsDen=getInterpValues('density',currentYearPos),valsRate=getInterpValues('rate',currentYearPos);
-  const valueTxt=formatModeValue(mode,modeValue);
-  setHoverHTML(`<h3>${name}</h3><div class="mini"><b>表示モード</b>：${modeLabels[mode]}<br><b>現在値</b>：${valueTxt}<br><b>人口</b>：${fmt(valsPop[name])}人<br><b>人口密度</b>：${fmt(valsDen[name],1)}人/km²<br><b>2015比増減率</b>：${fmt(valsRate[name],2)}%<br><b>その年の移動収支（男女総数・県内外）</b>：${netValue>=0?'+':''}${fmt(netValue)}人</div>`);
+function detailYearLabel(){
+  const first=Math.floor(currentYearPos),last=Math.min(DATA.years.length-1,first+1),t=currentYearPos-first;
+  return (t>.005&&t<.995?DATA.years[first]+'→'+DATA.years[last]:DATA.years[Math.round(currentYearPos)])+'年';
+}
+function renderPopulationDetail(name,modeValue,population,density,changeRate,netValue){
+  // City and prefecture have the same fields and numeric formatting.
+  const valueTxt=mode==='neutral'?'一定':formatModeValue(mode,modeValue);
+  const number=(v,decimals=0)=>Number.isFinite(v)?fmt(v,decimals):'未収録';
+  const rate=Number.isFinite(changeRate)?number(changeRate,2)+'%':'未収録';
+  const net=Number.isFinite(netValue)?(netValue>0?'+':'')+number(netValue)+'人':'未収録';
+  setHoverHTML(`<h3>${name}</h3><div class="mini"><b>表示年度</b>：${detailYearLabel()}<br><b>表示モード</b>：${modeLabels[mode]}<br><b>現在値</b>：${valueTxt}<br><b>人口</b>：${number(population)}人<br><b>人口密度</b>：${number(density,1)}人/km²<br><b>2015比増減率</b>：${rate}<br><b>その年の移動収支（男女総数・県内外）</b>：${net}</div>`);
+}
+function showMunicipalityDetails(name,modeValue,netValue){
+  const valsPop=getInterpValues('population',currentYearPos);
+  const valsDen=getInterpValues('density',currentYearPos);
+  const valsRate=getInterpValues('rate',currentYearPos);
+  renderPopulationDetail(name,modeValue,valsPop[name],valsDen[name],valsRate[name],netValue);
   renderExtraDashboard(name);
+}
+function showPrefectureDetails(){
+  const names=DATA.municipalities;
+  const populationByCity=getInterpValues('population',currentYearPos);
+  const netByCity=getInterpNet(currentYearPos);
+  const population=names.reduce((sum,name)=>sum+populationByCity[name],0);
+  const baseline=names.reduce((sum,name)=>sum+(DATA.metrics.population['2015'][name]||0),0);
+  const totalArea=names.reduce((sum,name)=>sum+(municipalityAreaKm2[name]||0),0);
+  const density=totalArea>0?population/totalArea:null;
+  const changeRate=baseline>0?(population/baseline-1)*100:null;
+  const net=names.reduce((sum,name)=>sum+netByCity[name],0);
+  let currentValue;
+  if(mode==='population')currentValue=population;
+  else if(mode==='rate')currentValue=changeRate;
+  else if(mode==='density')currentValue=density;
+  else if(mode==='neutral')currentValue=1;
+  else{
+    const lower=Math.floor(currentYearPos),upper=Math.min(DATA.years.length-1,lower+1),t=currentYearPos-lower;
+    const first=trendAnnualValue(mode,DATA.years[lower],null);
+    const second=trendAnnualValue(mode,DATA.years[upper],null);
+    currentValue=t<.001?first:t>.999?second:
+      Number.isFinite(first)&&Number.isFinite(second)?lerp(first,second,t):null;
+  }
+  ui.hoverbox.classList.remove('selected-city');
+  renderPopulationDetail('香川県（17市町合計）',currentValue,population,density,changeRate,net);
 }
 function showRoadDetails(r) {
   const modelWarning=currentYearPos<8?'<div style="border-left:3px solid #b69a55;padding:4px 7px;background:#f9f7f0;margin:6px 0"><b>推計値・実測の市町間移動人数ではありません</b><div>市町ごとの県内転出入実数と距離に基づく推計です。男女別も推計です。</div></div>':'';
@@ -1840,7 +1878,10 @@ function refreshAll() {
   const odLegendState=currentYearPos<8;
   if(previousODLegendState!==odLegendState){previousODLegendState=odLegendState;renderLegends();}
   updateEstatMigrationPanel();
+  const displayed=currentModeHeights(currentYearPos).vals;
   applyMunicipalVisuals();redrawRoads();
+  if(selectedCity)showMunicipalityDetails(selectedCity,displayed[selectedCity],getInterpNet(currentYearPos)[selectedCity]);
+  else showPrefectureDetails();
   const low=Math.floor(currentYearPos+1e-7);
   const fraction=currentYearPos-low;
   if(playing && fraction>.003 && fraction<.997){
