@@ -50,8 +50,13 @@ def get(url):
             time.sleep(attempt+1)
 
 def excel_url(year):
-    if year==2025:
-        return "https://www.pref.kagawa.lg.jp/documents/62699/hyo004.xlsx"
+    known={
+        2025:"https://www.pref.kagawa.lg.jp/documents/62699/hyo004.xlsx",
+        2024:"https://www.pref.kagawa.lg.jp/documents/54568/hyo006.xlsx",
+        2023:"https://www.pref.kagawa.lg.jp/documents/48668/hyo006.xlsx",
+        2022:"https://www.pref.kagawa.lg.jp/documents/40706/hyo006.xlsx",
+    }
+    if year in known:return known[year]
     if year>=2015:
         url=f"https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/{year}jinkoido.html"
     elif year in LEGACY:
