@@ -153,8 +153,16 @@ def parse_wide_workbook(data):
             if not city_columns:continue
             all_rows=rows[header_index+1:]
             totals=None
+            # The column-header row also says "総数" but has no numeric values.
+            # Accept only a data row whose six amounts reconcile for a city.
+            first_col=next(iter(city_columns.values()))
             for row in all_rows[:15]:
-                if any(norm(v) in ("総数","総計") for v in row[:4] if v is not None):
+                if not any(norm(v) in ("総数","総計") for v in row[:4] if v is not None):
+                    continue
+                probe=[num(v) for v in row[first_col:first_col+6]]
+                if len(probe)!=6 or any(v is None for v in probe):
+                    continue
+                if probe[0]>0 and probe[3]>0 and probe[0]==probe[1]+probe[2] and probe[3]==probe[4]+probe[5]:
                     totals=row
                     break
             if not totals:continue
