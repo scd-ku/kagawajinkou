@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>香川県人口動態 3D 地図 | 114方式の行政区域</title>
+<title>香川県人口動態 ／ 3D地図</title>
 <style>
 :root{--ink:#171717;--paper:#fff;--warm:#f3f3f1;--muted:#646b6f;--hair:#d6d9d9;--blue:#295abf;--red:#d7444e;--mid:#bfc5cb;--panel:#fafafa;}
 *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:Inter,"Helvetica Neue","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--ink);background:#fff}
@@ -341,7 +341,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
       <path d="M12 12h2v2h-2zM17 12h5M17 15v3h3M12 18v4h3M19 20h3" />
     </svg>
   </button>
-  <div class="title-text"><h1>香川県人口動態 <span class="slash">／</span> 3D地図</h1><small>2007–2025年・元サイトと同じ行政区域メッシュ / 人口・人口密度・割合 / 市町間の人口移動</small></div>
+  <div class="title-text"><h1>香川県人口動態 <span class="slash">／</span> 3D地図</h1><small>2007–2025年・香川県の行政区域 / 人口・人口密度・割合 / 県内外の人口移動</small></div>
 </div><div class="head-actions"><button id="helpBtn">? 使い方</button><button id="resetCamBtn">↺ 視点を戻す</button></div></header>
 <div class="layout">
 <div class="maparea">
@@ -379,12 +379,12 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
   <div class="legend-body" id="mapLegendBody"></div>
 </div><div id="hoverbox" class="hud"><h3>詳細</h3><div class="mini">市町村面や坂道をクリックすると、ここに値を表示します。</div></div>
   </div>
-  <div class="status" id="dataStatus">ドラッグ：回転 / ホイール：拡大縮小 / 右ドラッグ：平行移動。年度変化の速さは「再生速度」で設定します。「ゆっくり」は1年の補間18秒＋停止4秒で、球の移動も遅くなります。読み方は上部の「? 使い方」から表示できます。起動時に元サイトの公式行政区域メッシュ・人口・面積を読み込みます。通信不能時は右側の読込状況をご確認ください。</div>
+  <div class="status" id="dataStatus">ドラッグ：回転 / ホイール：拡大縮小 / 右ドラッグ：平行移動。年度変化の速さは「再生速度」で設定します。「ゆっくり」は1年の補間18秒＋停止4秒で、球の移動も遅くなります。読み方は上部の「? 使い方」から表示できます。起動時に行政区域の形状・人口・面積の記録を読み込みます。通信不能時は右側の読込状況をご確認ください。</div>
 </div>
 <aside class="side">
   <h2>人口動態 / 市町村</h2>
-<div id="sourceStatus" style="border:1px solid #d2d5d6;background:#f3f3f1;padding:11px;margin:10px 0;font-size:11px;line-height:1.65">元サイトの行政区域3Dメッシュ・人口・面積を取得中…</div>
-  <p class="mini">参照元の行政区域メッシュ・人口指標に、市町間の男女別転居を重ねました。性別ごとの原数値は香川県人口移動調査 第1表（2007〜2025年）をダウンロードして整形したものです。行政区域3Dメッシュ・人口系列・面積は scd-ku/historybank/114 の埋め込みデータを読み込んでいます。未個別公表の組合せは推計配分していません。</p>
+<div id="sourceStatus" style="border:1px solid #d2d5d6;background:#f3f3f1;padding:11px;margin:10px 0;font-size:11px;line-height:1.65">行政区域の3D形状・人口・面積を取得中…</div>
+  <p class="mini">市町村の行政区域3D形状に、2015年国勢調査由来のe-Stat小地域境界を重ねています。人口・移動者数は香川県などの公開統計を整理して使用します。県外の移動先都道府県別・男女別転入出は公式値、2007〜2014年の県内市町間の個別ルートのみ推計です。</p>
   <section class="selected-metric-panel" aria-labelledby="metricSectionHeading">
     <h3 id="metricSectionHeading">地図に表示するデータ</h3>
     <div class="selected-metric-card">
@@ -414,10 +414,9 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 <section class="external-flow-controls" aria-labelledby="externalFlowsHeading">
   <h3 id="externalFlowsHeading">県外との転入・転出</h3>
   <div class="external-flow-toggles">
-    <label><input type="checkbox" id="externalInToggle">県外からの転入</label>
-    <label><input type="checkbox" id="externalOutToggle">県外への転出</label>
+    <label><input type="checkbox" id="externalFlowToggle">県外との転入・転出（純移動差）</label>
   </div>
-  <p class="external-flow-note">白：男女総数／淡青：男性／淡赤：女性。弧の到達位置は移動先の方向、端点の高さは転入−転出差です。道は県境で淡く消えます。国外は地理方向を持たないため描きません。</p>
+  <p class="external-flow-note">県外との往復移動を相手先ごとに1本の坂道で表示（男女比較は各1本）。道路の幅と高低差は県内と共通スケールです。国外のデータは集計のみで地理的な道は表示しません。</p>
   <p id="externalFlowsStatus" role="status">市町村・移動先別の公式データを読み込み中…</p><a id="externalFlowsSource" class="mini" href="https://www.pref.kagawa.lg.jp/tokei/jinko/jinkoido/2025jinkoido.html" target="_blank" rel="noopener">使用した統計資料 ↗</a>
 </section>
   <h3>県内転居の男女別表示</h3>
@@ -465,7 +464,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
 <h3>市町村データの検索・保存</h3>
 <div class="field"><label for="officialFile">元サイトのHTMLを直接読み込む</label><input id="officialFile" type="file" accept=".html,text/html"></div>
 <button id="exportData" type="button">選択年度の人口データをCSV保存</button>
-<h3>資料・出典</h3><p class="mini">人口：historybank/114に収録の2007〜2025年の市町村別人口系列。人口密度：この人口を面積で除した値。市町間転居：香川県人口移動調査・第1表（2007〜2025年）。元サイトから地図データを取得した場合は、2025年の国土数値情報に由来する行政区域メッシュを使用します。オフライン・取得失敗時の仮表示は簡略形状です。人口の増減には出生・死亡・転入・転出のすべてが含まれますが、坂道は県内転居のみです。ポールは現在の市役所・町役場本庁の位置に配置（旧役場から移転した土庄町・小豆島町・多度津町などは現庁舎へ更新。座標参考：<a href="https://ton2net.com/municipal_office/" target="_blank" rel="noopener">全国市町村役場緯度経度一覧</a>／所在地：<a href="https://www.pref.kagawa.lg.jp/kocho/shokai/profile/w3cz95150312151105.html" target="_blank" rel="noopener">香川県内市町リンク</a>）。</p><footer>Science Communication Design Laboratory, Kagawa University</footer>
+<h3>資料・出典</h3><p class="mini">市町村の立体形状：<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html" target="_blank" rel="noopener">国土交通省・国土数値情報「行政区域」（2025年基準）</a>。町丁・字境界：<a href="https://github.com/frogcat/japan-small-area" target="_blank" rel="noopener">e-Statの2015年国勢調査由来の小地域GeoJSON</a>。人口（2007〜2025年）：香川県等の公表統計を整理。人口密度：人口を採用面積で除した値。県内・県外の転入出は香川県人口移動調査。2007〜2014年の県内市町間の個別移動ルートは推計であり、県外移動の相手先別人数は公式値です。オフライン時は地図の簡略形状を表示します。ポールは現在の市役所・町役場本庁の位置に配置（旧役場から移転した土庄町・小豆島町・多度津町などは現庁舎へ更新。座標参考：<a href="https://ton2net.com/municipal_office/" target="_blank" rel="noopener">全国市町村役場緯度経度一覧</a>／所在地：<a href="https://www.pref.kagawa.lg.jp/kocho/shokai/profile/w3cz95150312151105.html" target="_blank" rel="noopener">香川県内市町リンク</a>）。</p><footer>Science Communication Design Laboratory, Kagawa University</footer>
 </aside>
 </div>
 <div id="qrModal" role="presentation" hidden>
@@ -477,7 +476,7 @@ button:not(:disabled):active{box-shadow:1px 1px 0 #171717!important}
     <a class="qr-link" href="https://scd-ku.github.io/kagawajinkou/" target="_blank" rel="noopener">https://scd-ku.github.io/kagawajinkou/</a>
   </div>
 </div>
-<div id="helpPanel" hidden style="position:fixed;inset:0;background:#0006;z-index:20;display:grid;place-items:center"><div style="background:white;max-width:640px;padding:24px;border:1px solid #171717;line-height:1.8;font-size:13px"><h2>使い方 / データ出所</h2><p><b>2007〜2014年の追加元データ：</b><a href="https://opendata.pref.kagawa.lg.jp/dataset/834.html" target="_blank" rel="noopener">2007年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/835.html" target="_blank" rel="noopener">2008年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/836.html" target="_blank" rel="noopener">2009年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/839.html" target="_blank" rel="noopener">2010年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/838.html" target="_blank" rel="noopener">2011年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/840.html" target="_blank" rel="noopener">2012年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/217.html" target="_blank" rel="noopener">2013年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/218.html" target="_blank" rel="noopener">2014年</a>。各年の市町別「年齢（3区分）別人口」および「男女別人口動態」原表の公式プレビューを取得し、17市町の実数を県合計と照合して追加しました。2010年は国勢調査の確定値による再集計表です。県内市町間の個別OD（坂道）は2007〜2014年分を未収録としており、推計で作っていません。地図境界は2025年基準、人口密度は現在のアプリ採用面積を分母とします。</p><div class="help-section"><h3>3D地図の読み方</h3><p><b>面</b>：香川県内17市町の2025年の行政区域メッシュを利用します。面の高さは「割合・人口・人口密度」の選択指標で変わり、年を切り替えると滑らかに補間されます。高さは読み取りやすくするため強調した模式表現であり、標高ではありません。</p><p><b>円柱</b>：現在の市役所・町役場の位置に配置します。下端は各市町村面、上端はすべて共通の高さです。色は人口移動の収支で、赤が転入超過、青が転出超過を示します。</p><p><b>坂道と球</b>：坂道の幅は移動人数、傾斜は市町間の純移動差（初期3倍の強調）。球は優勢方向に流れます。総数は緑の坂道と濃い緑の球、男女比較は男性が青、女性が赤です。球1個は1人を表すものではありません。坂道で扱う県内転居と、市町の人口の自然増減は異なる指標です。</p></div><p>年度スライダーや再生、視点切替は元サイトと同じ考え方です。高さの指標は画面上部で「①表示対象（人口・自然増減・社会増減・出生死亡・年齢構成）」「②指標（人数・割合・面積当たり等）」を選びます。地図面をクリックすると市町を選択できます。ポールは市役所・町役場の位置に立ち、各市町の地図面から共通の最高坂道上端まで伸びます。坂道は総移動人数で幅が変わり、純移動差は初期3倍で強調しています。道路の横幅方向は常に水平で、傾くのは進行方向だけです。</p><p><b>表示ルール</b><br>地図面の色は人口の前年比4段階です。円柱の色は男女総数の移動収支で、青＝転出超過、赤＝転入超過です。坂道は総数モードでは緑、男女比較では男性が青、女性が赤になります。</p><p><b>新しく追加した人口動態と年齢別人口</b><br>出生数・死亡数・自然増減・社会増減は香川県人口移動調査報告（2007〜2025年）の市町別人口動態表、年齢構成は同年報と国勢調査の市町別年齢3区分表（2007〜2024年）の公式値です。数値は公開表のプレビューまたは報告書PDFから整理し、CSVに収録しています。原本XLSXファイル自体はこのアプリに同梱していません。2015〜2022年は県のExcelプレビューを照合して収録しました。年齢不詳者は構成比の分母から除外しています。2025年の年齢構成の確定表は未収録のため年齢モードでは「未収録」とし、側面3層は2024年の値を参考表示します。<br><br><b>データ出所</b><br>行政区域3Dメッシュ・人口系列（2007〜2025年）・面積は <a href="https://scd-ku.github.io/historybank/114/index.html" target="_blank" rel="noopener">参照元サイト：historybank/114</a> の埋め込みデータを読み込んでいます。市町間の転入出は、香川県人口移動調査 第1表（2007〜2025年、男女別）のファイルをダウンロードし、このアプリ用に整形して読み込んでいます。未個別公表の組合せは推計配分していません。公式地形が読み込まれないときは元サイトのHTMLファイルを直接選択できます。</p><div style="margin:12px 0 4px;border-top:1px solid #d6d9d9;padding-top:10px;font-size:12px;line-height:1.65"><b>e-Stat（2007〜2014年の移動元・男女別転入）</b><br>総務省統計局「住民基本台帳人口移動報告」第10表（2007〜2009年）、第12表（2010〜2014年）を使用。市町別転出・転入超過は第10表の2010〜2014年を確認済みで、2007〜2009年の転出は未収録です。「香川県内の他市町から」の合計値は分かりますが、個別の市町間経路（例：丸亀市→高松市）はこの表からは確定できません。<br><a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&lid=000001026569" target="_blank" rel="noopener">2007年の年報原表 ↗</a> ／ <a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&lid=000001129143" target="_blank" rel="noopener">2014年の年報原表 ↗</a> ／ <a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&toukei=00200523&tstat=000000070001" target="_blank" rel="noopener">政府統計・年報検索 ↗</a> ／ <a href="https://github.com/scd-ku/kagawajinkou/tree/main/data" target="_blank" rel="noopener">検証済み集計CSV ↗</a></div><div style="border-top:1px solid #d6d9d9;margin:10px 0 8px;padding-top:9px"><b>2007〜2014年の坂道（推計）について</b><p style="margin:3px 0 8px">香川県「香川県人口移動調査報告（年報）」第4表の各市町の県内転入数・県内転出数は公式実数です。ただし、この表は市町間の移動元×移動先を示しません。2007〜2014年の坂道は、各市町の転出・転入実数を制約条件とし、市町の位置関係から距離減衰重力モデル＋反復比例調整（IPF）で作成した<b>推計のOD行列</b>です。移動先合計と移動元合計のわずかな不一致（転入・転出計の集計差）は、行列計算では転入側を一様比例補正しています。男女の配分はe-Statの転入先別男女比を利用した<b>推計</b>です。2015年以降の実測ODと混同しないでください。</p><div><a href="https://github.com/scd-ku/kagawajinkou/blob/main/data/kagawa_2007_2014_marginals_official.csv" target="_blank" rel="noopener">公式17市町別転入出CSV ↗</a> ／ <a href="https://github.com/scd-ku/kagawajinkou/blob/main/data/kagawa_od_2007_2014_modeled.csv" target="_blank" rel="noopener">推計の市町間OD CSV ↗</a></div></div><button id="closeHelp">閉じる</button></div></div>
+<div id="helpPanel" hidden style="position:fixed;inset:0;background:#0006;z-index:20;display:grid;place-items:center"><div style="background:white;max-width:640px;padding:24px;border:1px solid #171717;line-height:1.8;font-size:13px"><h2>使い方 / データ出所</h2><p><b>2007〜2014年の追加元データ：</b><a href="https://opendata.pref.kagawa.lg.jp/dataset/834.html" target="_blank" rel="noopener">2007年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/835.html" target="_blank" rel="noopener">2008年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/836.html" target="_blank" rel="noopener">2009年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/839.html" target="_blank" rel="noopener">2010年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/838.html" target="_blank" rel="noopener">2011年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/840.html" target="_blank" rel="noopener">2012年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/217.html" target="_blank" rel="noopener">2013年</a> <a href="https://opendata.pref.kagawa.lg.jp/dataset/218.html" target="_blank" rel="noopener">2014年</a>。各年の市町別「年齢（3区分）別人口」および「男女別人口動態」原表の公式プレビューを取得し、17市町の実数を県合計と照合して追加しました。2010年は国勢調査の確定値による再集計表です。県内市町間の個別OD（坂道）は2007〜2014年分を未収録としており、推計で作っていません。地図境界は2025年基準、人口密度は現在のアプリ採用面積を分母とします。</p><div class="help-section"><h3>3D地図の読み方</h3><p><b>面</b>：香川県内17市町の2025年の行政区域メッシュを利用します。面の高さは「割合・人口・人口密度」の選択指標で変わり、年を切り替えると滑らかに補間されます。高さは読み取りやすくするため強調した模式表現であり、標高ではありません。</p><p><b>円柱</b>：現在の市役所・町役場の位置に配置します。下端は各市町村面、上端はすべて共通の高さです。色は人口移動の収支で、赤が転入超過、青が転出超過を示します。</p><p><b>坂道と球</b>：坂道の幅は往復移動人数、端点の高低差は転入・転出の純移動差（初期3倍の強調）です。県内と県外の坂道は共通スケールです。県外では1接続先に1本（男女比較は各1本）、県境付近で透明になります。球は優勢方向に流れます。県内総数は緑、県外総数は白、男女比較は県内が青・赤、県外は淡青・淡赤です。球1個は1人を表すものではありません。坂道で扱う県内転居と、市町の人口の自然増減は異なる指標です。</p></div><p>年次推移グラフ上の縦点線をドラッグして年度を変更でき、再生・視点切替も利用できます。高さの指標は画面上部で「①表示対象（人口・自然増減・社会増減・出生死亡・年齢構成）」「②指標（人数・割合・面積当たり等）」を選びます。地図面をクリックすると市町を選択できます。ポールは市役所・町役場の位置に立ち、各市町の地図面から共通の最高坂道上端まで伸びます。坂道は総移動人数で幅が変わり、純移動差は初期3倍で強調しています。道路の横幅方向は常に水平で、傾くのは進行方向だけです。</p><p><b>表示ルール</b><br>地図面の色は人口の前年比4段階です。円柱の色は男女総数の移動収支で、青＝転出超過、赤＝転入超過です。県内の坂道は総数モードで緑、男女比較では男性が青・女性が赤です。県外の坂道は総数が白、男女比較では淡青・淡赤です。</p><p><b>新しく追加した人口動態と年齢別人口</b><br>出生数・死亡数・自然増減・社会増減は香川県人口移動調査報告（2007〜2025年）の市町別人口動態表、年齢構成は同年報と国勢調査の市町別年齢3区分表（2007〜2024年）の公式値です。数値は公開表のプレビューまたは報告書PDFから整理し、CSVに収録しています。原本XLSXファイル自体はこのアプリに同梱していません。2015〜2022年は県のExcelプレビューを照合して収録しました。年齢不詳者は構成比の分母から除外しています。2025年の年齢構成の確定表は未収録のため年齢モードでは「未収録」とし、側面3層は2024年の値を参考表示します。<br><br><b>データ出所</b><br>市町村の3D形状は<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html" target="_blank" rel="noopener">国土交通省「国土数値情報・行政区域データ」</a>による2025年基準の行政区域を立体化したものです。町丁・字の境界線は<a href="https://github.com/frogcat/japan-small-area" target="_blank" rel="noopener">e-Statの2015年国勢調査に基づく小地域GeoJSON（frogcat / japan-small-area）</a>で、立体形状とは年代と粒度が異なります。人口・出生・死亡・年齢構成（2007〜2025年）には香川県人口移動調査・国勢調査等の公表資料を整理した値を用い、人口密度は採用面積を分母として算出します。県外との移動は香川県人口移動調査の市町村・移動先都道府県・男女別の公式値です。2007〜2014年の県内市町間の個別ルートのみ実数からの推計です。地形を取得できないときは簡略形状で表示します。</p><div style="margin:12px 0 4px;border-top:1px solid #d6d9d9;padding-top:10px;font-size:12px;line-height:1.65"><b>e-Stat（2007〜2014年の移動元・男女別転入）</b><br>総務省統計局「住民基本台帳人口移動報告」第10表（2007〜2009年）、第12表（2010〜2014年）を使用。市町別転出・転入超過は第10表の2010〜2014年を確認済みで、2007〜2009年の転出は未収録です。「香川県内の他市町から」の合計値は分かりますが、個別の市町間経路（例：丸亀市→高松市）はこの表からは確定できません。<br><a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&lid=000001026569" target="_blank" rel="noopener">2007年の年報原表 ↗</a> ／ <a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&lid=000001129143" target="_blank" rel="noopener">2014年の年報原表 ↗</a> ／ <a href="https://www.e-stat.go.jp/stat-search/files?layout=datalist&toukei=00200523&tstat=000000070001" target="_blank" rel="noopener">政府統計・年報検索 ↗</a> ／ <a href="https://github.com/scd-ku/kagawajinkou/tree/main/data" target="_blank" rel="noopener">検証済み集計CSV ↗</a></div><div style="border-top:1px solid #d6d9d9;margin:10px 0 8px;padding-top:9px"><b>2007〜2014年の坂道（推計）について</b><p style="margin:3px 0 8px">香川県「香川県人口移動調査報告（年報）」第4表の各市町の県内転入数・県内転出数は公式実数です。ただし、この表は市町間の移動元×移動先を示しません。2007〜2014年の坂道は、各市町の転出・転入実数を制約条件とし、市町の位置関係から距離減衰重力モデル＋反復比例調整（IPF）で作成した<b>推計のOD行列</b>です。移動先合計と移動元合計のわずかな不一致（転入・転出計の集計差）は、行列計算では転入側を一様比例補正しています。男女の配分はe-Statの転入先別男女比を利用した<b>推計</b>です。2015年以降の実測ODと混同しないでください。</p><div><a href="https://github.com/scd-ku/kagawajinkou/blob/main/data/kagawa_2007_2014_marginals_official.csv" target="_blank" rel="noopener">公式17市町別転入出CSV ↗</a> ／ <a href="https://github.com/scd-ku/kagawajinkou/blob/main/data/kagawa_od_2007_2014_modeled.csv" target="_blank" rel="noopener">推計の市町間OD CSV ↗</a></div></div><button id="closeHelp">閉じる</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
@@ -627,12 +626,22 @@ function refreshSelectedOutline(){
 function selectCity(name,center=false){
   selectedCity=name;
   const vals=currentModeHeights(currentYearPos).vals,net=getInterpNet(currentYearPos);
+  applyMunicipalVisuals(); // muted non-selected municipality surfaces
   showMunicipalityDetails(name,vals[name],net[name]);
   document.getElementById('hoverbox').classList.add('selected-city');
   updateCityList(vals,net);refreshSelectedOutline();redrawRoads();renderTrendChart(true);
   if(center){const p=DATA.positions[name];controls.target.set(p[0],latestHeights[name]||20,p[1]);}
   const button=[...ui.cityList.querySelectorAll('.cityrow')].find(b=>b.dataset.city===name);
-  if(button){button.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  if(button)button.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function clearCitySelection(){
+  if(!selectedCity)return;
+  selectedCity=null;
+  const vals=currentModeHeights(currentYearPos).vals,net=getInterpNet(currentYearPos);
+  document.getElementById('hoverbox').classList.remove('selected-city');
+  setHoverHTML('<h3>詳細</h3><div class="mini">香川県17市町の総数表示。市町村をクリックすると、その市町村を強調します。</div>');
+  refreshSelectedOutline();
+  applyMunicipalVisuals();updateCityList(vals,net);redrawRoads();renderTrendChart(true);
 }
 
 function makePositionGeometry(values, stride){
@@ -1080,9 +1089,11 @@ function applyMunicipalVisuals(){
   if(typeof smallAreaCityGroups!=='undefined')for(const [city,line] of smallAreaCityGroups)line.position.y=heights[city]+.55;
   DATA.municipalities.forEach(n=>{
     const group=muniMeshes.get(n),h=heights[n],col=modeColor(n);
+    const inactive=Boolean(selectedCity&&n!==selectedCity);
+    if(inactive)col.lerp(new THREE.Color(0xd7ddda),.82);
     const {top,side,edge}=group.userData;
     top.position.y=h; top.material.color.copy(col);side.scale.y=h;
-    if(AGE_STRATA_MODES.has(mode)) applyAgeStrataToSide(side,n,currentYearPos,col.clone().multiplyScalar(.82));
+    if(AGE_STRATA_MODES.has(mode)&&!inactive) applyAgeStrataToSide(side,n,currentYearPos,col.clone().multiplyScalar(.82));
     else setSideSolidColor(side,col.clone().multiplyScalar(.82));
     edge.position.y=h+.06;
     const label=labelMeshes.get(n);label.visible=showLabels;
@@ -1098,7 +1109,24 @@ function applyMunicipalVisuals(){
 }
 let lastListUpdate=0;
 const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
-canvas.addEventListener('pointerdown', e => { const rect=canvas.getBoundingClientRect(); pointer.x=((e.clientX-rect.left)/rect.width)*2-1; pointer.y=-((e.clientY-rect.top)/rect.height)*2+1; raycaster.setFromCamera(pointer,camera); const hits=raycaster.intersectObjects([...muniGroup.children, ...supportGroup.children, ...roadGroup.children, ...externalFlowGroup.children], true); if(hits.length){ const ud = hits[0].object.userData||{}; if(ud.type==='municipality' || ud.type==='support'){ selectCity(ud.name,false); } else if(ud.type==='road'){ showRoadDetails(ud.road); } else if(ud.type==='externalRoad'){showExternalRoadDetails(ud.record);} } });
+// Ignore OrbitControls drags: only short clicks change the selected municipality.
+let cityClickStart=null;
+canvas.addEventListener('pointerdown',e=>{if(e.button===0)cityClickStart={id:e.pointerId,x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointercancel',()=>{cityClickStart=null;});
+canvas.addEventListener('pointerup',e=>{
+  const start=cityClickStart;cityClickStart=null;
+  if(!start||start.id!==e.pointerId||Math.hypot(e.clientX-start.x,e.clientY-start.y)>6)return;
+  const rect=canvas.getBoundingClientRect();
+  pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
+  pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(pointer,camera);
+  const hit=raycaster.intersectObjects([...muniGroup.children,...supportGroup.children,...roadGroup.children,...externalFlowGroup.children],true)[0];
+  const ud=hit?.object?.userData||{};
+  if(ud.type==='municipality'||ud.type==='support'){selectCity(ud.name,false);return;}
+  clearCitySelection(); // empty map and road surfaces return to prefecture totals
+  if(ud.type==='road')showRoadDetails(ud.road);
+  else if(ud.type==='externalRoad')showExternalRoadDetails(ud.record);
+});
 
 
 // Measured municipality x prefecture migration; never infer unlisted routes from totals.
