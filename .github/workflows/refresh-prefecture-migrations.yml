@@ -29,7 +29,7 @@ jobs:
         run: python scripts/compile_prefecture_migrations.py
       - name: Commit only validated published data
         run: |
-          git add data/kagawa_prefecture_flows.json
+          git add data/kagawa_prefecture_flows.json data/prefecture_import_diagnostics.json
           if git diff --cached --quiet; then
             echo "No data changes"
             exit 0
