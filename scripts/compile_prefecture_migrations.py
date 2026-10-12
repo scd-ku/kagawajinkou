@@ -207,7 +207,7 @@ def main():
                     probes.append({"name":sheet.title,"rows":len(rows),"cityMarkers":found})
                 diagnostics[str(year)]={"url":url,"bytes":len(blob),"cityCount":len(records),"sheets":probes}
             if len(records)<12:
-                diagnostics[str(year)]={"error":"insufficient validated municipal tables","cityCount":len(records),"urls":urls,"sampleCities":list(records)[:5]}
+                diagnostics[str(year)]={**diagnostics.get(str(year),{}),"error":"insufficient validated municipal tables","cityCount":len(records),"urls":urls,"sampleCities":list(records)[:5]}
                 print(f"{year}: only {len(records)} city sheets validated; skip",file=sys.stderr)
                 continue
             document.setdefault("years",{})[str(year)]=records
