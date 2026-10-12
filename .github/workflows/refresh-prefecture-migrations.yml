@@ -1,0 +1,38 @@
+name: Refresh official prefecture migration data
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/compile_prefecture_migrations.py"
+      - ".github/workflows/refresh-prefecture-migrations.yml"
+  schedule:
+    - cron: "17 3 1 8 *"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install XLSX and HTTP parsers
+        run: python -m pip install --disable-pip-version-check openpyxl requests beautifulsoup4
+      - name: Compile official municipality-prefecture data
+        run: python scripts/compile_prefecture_migrations.py
+      - name: Commit only validated published data
+        run: |
+          git add data/kagawa_prefecture_flows.json
+          if git diff --cached --quiet; then
+            echo "No data changes"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "Refresh validated official prefecture migration tables"
+          git push
